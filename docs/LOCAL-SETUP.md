@@ -1,11 +1,23 @@
 # 노트북(로컬)에서 해야 하는 설정
 
+## 한 번에 설치 (권장)
+저장소를 받은 폴더에서 한 줄만 실행한다. 클라우드의 클로드는 노트북을 조종할 수 없다.
+```
+Mac/Linux:  bash scripts/setup-local.sh          # 먼저 DRY_RUN=1 bash scripts/setup-local.sh 로 미리보기 가능
+Windows  :  .\scripts\setup-local.ps1            # 먼저 -DryRun 으로 미리보기 가능
+```
+설치 대상: ffmpeg, yt-dlp, whisper-ctranslate2, `.env`(이름만 있는 템플릿 복사). OmniRoute는 `WITH_OMNIROUTE=1`(Windows는 `-WithOmniroute`)을 붙일 때만 설치.
+API 키는 `.env`에 직접 입력한다. 채팅에 붙여넣지 않는다.
+검증 상태: Linux에서 실제 실행 확인(yt-dlp, whisper-ctranslate2 설치·실행). Mac/Windows(.ps1)는 이 환경에서 시험하지 못했다.
+
+아래는 수동으로 할 때의 설명이다.
+
 클라우드 세션은 YouTube/Instagram에 접속할 수 없고, 내 PC의 프로그램을 설치·실행할 수도 없다. 아래는 **내 노트북 터미널**에서 직접 실행한다.
 (확인됨: 클라우드 컨테이너에서 youtube.com / instagram.com 접속 차단. 환경 설정의 Network access에 도메인을 허용하면 클라우드에서도 가능하지만, 로컬이 더 단순하다.)
 
 ## 1. 영상 링크 읽기 (`video-link` 스킬용)
 ```
-pip install -U yt-dlp faster-whisper      # ffmpeg도 필요: Windows `winget install ffmpeg`, Mac `brew install ffmpeg`
+pip install -U yt-dlp whisper-ctranslate2      # ffmpeg도 필요: Windows `winget install ffmpeg`, Mac `brew install ffmpeg`
 ```
 이후 대화창에 링크만 붙여넣으면 스킬이 자동 발동한다. 자막이 없는 Reels는 음성 인식(whisper)으로 처리하며 CPU에서는 느리다.
 
