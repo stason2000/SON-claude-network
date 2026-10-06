@@ -1,12 +1,19 @@
 # Windows 설치 스크립트: all-skills-package.zip -> ~/.claude (스킬/에이전트) + watch-skill
 # 사용: powershell -ExecutionPolicy Bypass -File install-windows.ps1 -Zip C:\경로\all-skills-package.zip
 param(
-  [Parameter(Mandatory=$true)][string]$Zip,
+  [string]$Zip,
   [string[]]$Departments = @("finance","product","research","marketing"),  # 설치할 에이전트 부서
   [switch]$SkipWatch,       # watch-skill 설치 생략
   [switch]$SkipAgents       # 에이전트 설치 생략
 )
 $ErrorActionPreference = "Stop"
+# -Zip 생략 시: 이 스크립트 옆 폴더 또는 다운로드 폴더에서 자동으로 찾음
+if (-not $Zip) {
+  $Zip = @($PSScriptRoot, (Join-Path $env:USERPROFILE "Downloads")) |
+    ForEach-Object { Join-Path $_ "all-skills-package.zip" } | Where-Object { Test-Path $_ } | Select-Object -First 1
+  if (-not $Zip) { throw "all-skills-package.zip을 찾지 못했습니다. 이 파일과 같은 폴더나 다운로드 폴더에 넣어 주세요." }
+}
+Write-Host "사용할 zip: $Zip"
 $claude = Join-Path $env:USERPROFILE ".claude"
 $work   = Join-Path $env:TEMP "skills-pkg-$(Get-Random)"
 New-Item -ItemType Directory -Force $work, "$claude\skills", "$claude\agents" | Out-Null

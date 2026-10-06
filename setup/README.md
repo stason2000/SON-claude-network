@@ -1,11 +1,9 @@
-# 설치 도구 (Windows)
+# 설치 방법 (Windows, 제일 쉬운 방법)
 
-1. `all-skills-package.zip`을 노트북에 저장
-2. PowerShell에서: `powershell -ExecutionPolicy Bypass -File install-windows.ps1 -Zip C:\경로\all-skills-package.zip`
-   - 에이전트 부서 변경: `-Departments engineering,design` / 생략: `-SkipAgents`, `-SkipWatch`
-3. Claude Code를 새로 시작
-4. watch-skill 시험: `watch-skill watch "https://youtu.be/L9wC5CQHnFQ"`
-5. BTC 선물 시세(읽기 전용): `python btc_futures_quote.py`
+1. `all-skills-package.zip`을 **다운로드 폴더**에 둡니다.
+2. 이 폴더의 파일 3개(`install.bat`, `install-windows.ps1`, `btc_futures_quote.py`)를 **같은 폴더**(예: 바탕화면의 새 폴더)에 저장합니다.
+3. `install.bat`을 **더블클릭**합니다. (파란 경고창이 뜨면 "추가 정보 → 실행")
+4. 끝나면 Claude Code를 다시 시작합니다.
 
-주의: 스크립트와 시세 스크립트는 클라우드에서 문법만 확인했고 실행 시험은 못 했습니다(네트워크 차단, Windows 아님).
-API 키는 이 저장소에 절대 올리지 마세요.
+옵션/주의: `-Departments`, `-SkipAgents`, `-SkipWatch`는 install-windows.ps1 직접 실행 시에만 사용.
+클라우드에서는 문법만 확인했고 실행 시험은 못 했습니다. API 키는 저장소에 올리지 마세요.
