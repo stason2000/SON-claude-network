@@ -6,7 +6,7 @@
 Mac/Linux:  bash scripts/setup-local.sh          # 먼저 DRY_RUN=1 bash scripts/setup-local.sh 로 미리보기 가능
 Windows  :  .\scripts\setup-local.ps1            # 먼저 -DryRun 으로 미리보기 가능
 ```
-설치 대상: ffmpeg, yt-dlp, whisper-ctranslate2, `.env`(이름만 있는 템플릿 복사). OmniRoute는 `WITH_OMNIROUTE=1`(Windows는 `-WithOmniroute`)을 붙일 때만 설치.
+설치 대상: ffmpeg, yt-dlp, whisper-ctranslate2, OmniRoute(기본 포함, **설치 용량 약 3GB**), `.env`(이름만 있는 템플릿 복사). OmniRoute를 빼려면 `WITHOUT_OMNIROUTE=1`(Windows는 `$env:WITHOUT_OMNIROUTE='1'`).
 API 키는 `.env`에 직접 입력한다. 채팅에 붙여넣지 않는다.
 검증 상태: Linux에서 실제 실행 확인(yt-dlp, whisper-ctranslate2 설치·실행). Mac/Windows(.ps1)는 이 환경에서 시험하지 못했다.
 
@@ -22,10 +22,10 @@ pip install -U yt-dlp whisper-ctranslate2      # ffmpeg도 필요: Windows `wing
 이후 대화창에 링크만 붙여넣으면 스킬이 자동 발동한다. 자막이 없는 Reels는 음성 인식(whisper)으로 처리하며 CPU에서는 느리다.
 
 ## 2. 무료 AI 라우팅: OmniRoute (선택, 위험 이해 후)
-출처: github.com/diegosouzapw/OmniRoute (MIT). 아래는 저장소 문서에서 확인한 내용이며 **내가 직접 실행해 검증하지는 않았다.**
+출처: github.com/diegosouzapw/OmniRoute (MIT). 아래는 저장소 문서에서 확인한 내용이며 **클라우드 컨테이너에서 설치·기동·모델 목록(99개)·라우팅 시도까지 확인했다. 외부 제공자로 나가는 통신이 막혀 실제 답변은 받지 못했다.**
 ```
 npm install -g omniroute
-omniroute            # 대시보드 + 게이트웨이 (기본 포트 20128)
+OMNIROUTE_SERVER_HOST=127.0.0.1 omniroute   # 이 PC에서만 접속. 기본값은 모든 네트워크에 열리고 초기 비밀번호가 CHANGEME이므로 위험 (포트 20128)
 omniroute launch     # Claude Code를 게이트웨이에 연결해 실행 (ANTHROPIC_BASE_URL / AUTH_TOKEN 자동 설정)
 ```
 **반드시 지킬 것**

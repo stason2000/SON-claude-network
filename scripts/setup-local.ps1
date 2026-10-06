@@ -1,5 +1,5 @@
 # 노트북 원샷 설치 (Windows). 이 파일 전체를 복사 -> PowerShell에 붙여넣기 -> Enter.
-# 저장소가 없어도 동작한다. 미리보기: 먼저 $env:DRY_RUN='1' 입력 후 붙여넣기. OmniRoute 포함: $env:WITH_OMNIROUTE='1'
+# 저장소가 없어도 동작한다. 미리보기: 먼저 $env:DRY_RUN='1' 입력 후 붙여넣기. OmniRoute는 기본 설치(약 3GB). 건너뛰려면 $env:WITHOUT_OMNIROUTE='1'
 & {
   $ErrorActionPreference = 'Stop'
   $dry = ($env:DRY_RUN -eq '1')
@@ -12,7 +12,7 @@
 
   if (-not (Have 'py') -and -not (Have 'python')) { Run "$wg Python.Python.3.12"; RefreshPath }
   if (-not (Have 'ffmpeg')) { Run "$wg Gyan.FFmpeg"; RefreshPath }
-  if ($env:WITH_OMNIROUTE -eq '1' -and -not (Have 'npm')) { Run "$wg OpenJS.NodeJS.LTS"; RefreshPath }
+  if ($env:WITHOUT_OMNIROUTE -ne '1' -and -not (Have 'npm')) { Run "$wg OpenJS.NodeJS.LTS"; RefreshPath }
 
   $py = if (Have 'py') { 'py' } else { 'python' }
   Run "$py -m pip install --user -U yt-dlp whisper-ctranslate2 requests"
@@ -25,11 +25,12 @@
     RefreshPath
   }
 
-  if ($env:WITH_OMNIROUTE -eq '1') { Run 'npm install -g omniroute' }
+  if ($env:WITHOUT_OMNIROUTE -ne '1') { Run 'npm install -g omniroute' }
 
   Write-Host ''
   Write-Host '설치 확인:'
   foreach ($c in 'yt-dlp','whisper-ctranslate2','ffmpeg') { if (Have $c) { Write-Host "  OK $c" } else { Write-Host "  -- $c (새 PowerShell 창을 열어 다시 확인)" } }
   Write-Host ''
+  Write-Host "OmniRoute 실행(이 PC에서만 접속되게): `$env:OMNIROUTE_SERVER_HOST='127.0.0.1'; omniroute   -> http://localhost:20128 에서 초기 비밀번호 CHANGEME를 바로 변경"
   Write-Host '끝. API 키가 필요한 기능은 .env에 직접 입력하세요. 키는 채팅에 붙여넣지 마세요.'
 }

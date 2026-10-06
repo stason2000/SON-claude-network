@@ -15,7 +15,7 @@ Token rule: never paste the full transcript back. Summarize in <=10 lines unless
    Then strip timestamps/numbering before reading: `sed -E '/^[0-9]+$|-->|^$/d' *.srt | awk '!seen[$0]++'`
 3. No subtitles (most Reels): `yt-dlp -x --audio-format mp3 -o "%(id)s.%(ext)s" URL`, then
    `whisper-ctranslate2 --model base --language ko f.mp3` locally (free, CPU ok). Not installed → say so, give the install line, stop.
-4. Visual content matters (chart, UI, product): `ffmpeg -i v.mp4 -vf fps=1/10 f_%03d.jpg`, view at most 6 frames.
+4. Visual content matters (chart, UI, product): download video separately (`-x` deletes it): `yt-dlp -f "worst[ext=mp4]/worst" -o v.mp4 URL`, then `ffmpeg -i v.mp4 -vf fps=1/10 f_%03d.jpg`, view at most 6 frames.
 
 ## Rules
 
