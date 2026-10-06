@@ -8,7 +8,15 @@ User: Korean university sophomore building crypto/investing tools and web/app pr
 - No subagents or parallel agents unless the task clearly needs them.
 - Simplest thing that works: stdlib / native / existing dependency before a new library. No unrequested abstractions.
 - Unclear big task: ask one question or propose a 3-step plan before coding.
-- Prefer cheap/free models for boilerplate when a gateway is configured; use the strongest model only for design and hard bugs.
+
+## Route EVERY request (model + effort by stakes, not by topic)
+Main session runs on the cheaper model (settings.json: sonnet). Before answering, silently pick a level; one-line tag only when you delegate (`Route: H -> deep-thinker[opus/high]`).
+- L (lookup, rename, format, translate, summarize given text, run a command): answer inline, minimal thinking. Bulky mechanical work (many files, long logs) -> `quick-helper` [haiku/low].
+- M (normal coding, web/app features, explanations, small bugs, drafts): answer inline. Default level.
+- H -> `deep-thinker` [opus/high]: architecture, security, money at risk (orders, keys, leverage, investment or spending decisions), legal/regulatory, business viability with real spend, a bug that survived one failed fix.
+- Unsure between M and H: do M; escalate to H only if the first attempt fails or the user's money/keys are involved. Max one deep call per question; send it only the needed context. Never delegate small tasks (agent cold start costs tokens).
+- Trading-bot builds use the fixed pipeline in `build-router` (architect -> coder -> reviewer -> helper).
+- I cannot switch the main session's model or thinking level mid-chat; the user can with `/model`. Say so if asked to "use Opus for this" in the main session, and delegate instead.
 
 ## Skills to use automatically
 - Video/Reels/YouTube link pasted -> `video-link`.

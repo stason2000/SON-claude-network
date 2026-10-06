@@ -3,7 +3,7 @@ name: build-router
 description: Picks the right agent, model and reasoning effort for a build request. Use when the user asks to build a program or bot, especially "자동매매 프로그램 구축", "트레이딩 봇 만들어줘", or any multi-file project. Skip for small edits and questions.
 ---
 
-# build-router
+# build-router (trading-bot pipeline; general per-request routing lives in CLAUDE.md)
 
 Judge size and risk first, then spend model power only where a mistake costs money. Every agent call re-reads context, so do not delegate small work.
 
