@@ -18,7 +18,7 @@
   if ($omni -and -not (NodeOk)) {
     try { Run "$wg OpenJS.NodeJS.LTS" } catch { Write-Host 'Node 설치/업그레이드 경고(이미 최신일 수 있음)' }
     RefreshPath
-    if (-not (NodeOk)) { Write-Host 'Node 버전이 낮아 OmniRoute를 건너뜁니다. Node LTS 설치 후 npm install -g omniroute 를 직접 실행하세요.'; $omni = $false }
+    if (-not (NodeOk)) { Write-Host 'Node 버전이 낮아 OmniRoute를 건너뜁니다. Node LTS 설치 후 npm.cmd install -g omniroute 를 직접 실행하세요.'; $omni = $false }
   }
 
   $py = if (Have 'py') { 'py' } else { 'python' }
@@ -32,12 +32,14 @@
     RefreshPath
   }
 
-  if ($omni) { Run 'npm install -g omniroute' }
+  # npm.ps1은 실행 정책에 막히므로 .cmd로 실행
+  if ($omni) { Run 'npm.cmd install -g omniroute' }
 
   Write-Host ''
   Write-Host '설치 확인:'
-  foreach ($c in 'yt-dlp','whisper-ctranslate2','ffmpeg') { if (Have $c) { Write-Host "  OK $c" } else { Write-Host "  -- $c (새 PowerShell 창을 열어 다시 확인)" } }
+  $chk = @('yt-dlp','whisper-ctranslate2','ffmpeg'); if ($omni) { $chk += 'omniroute.cmd' }
+  foreach ($c in $chk) { if (Have $c) { Write-Host "  OK $c" } else { Write-Host "  -- $c (새 PowerShell 창을 열어 다시 확인)" } }
   Write-Host ''
-  Write-Host "OmniRoute 실행(이 PC에서만 접속되게): `$env:OMNIROUTE_SERVER_HOST='127.0.0.1'; omniroute   -> http://localhost:20128 에서 초기 비밀번호 CHANGEME를 바로 변경"
+  Write-Host "OmniRoute 실행(이 PC에서만 접속되게): `$env:OMNIROUTE_SERVER_HOST='127.0.0.1'; omniroute.cmd   -> http://localhost:20128 에서 초기 비밀번호 CHANGEME를 바로 변경"
   Write-Host '끝. API 키가 필요한 기능은 .env에 직접 입력하세요. 키는 채팅에 붙여넣지 마세요.'
 }

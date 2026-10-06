@@ -24,7 +24,7 @@ pip install -U yt-dlp whisper-ctranslate2      # ffmpeg도 필요: Windows `wing
 ## 2. 무료 AI 라우팅: OmniRoute (선택, 위험 이해 후)
 출처: github.com/diegosouzapw/OmniRoute (MIT). 아래는 저장소 문서에서 확인한 내용이며 **클라우드 컨테이너에서 설치·기동·모델 목록(99개)·라우팅 시도까지 확인했다. 외부 제공자로 나가는 통신이 막혀 실제 답변은 받지 못했다.**
 ```
-npm install -g omniroute
+npm install -g omniroute                      # Windows PowerShell은 npm.cmd / omniroute.cmd 로 입력 (npm.ps1은 실행 정책에 막힘)
 OMNIROUTE_SERVER_HOST=127.0.0.1 omniroute   # 이 PC에서만 접속. 기본값은 모든 네트워크에 열리고 초기 비밀번호가 CHANGEME이므로 위험 (포트 20128)
 omniroute launch     # Claude Code를 게이트웨이에 연결해 실행 (ANTHROPIC_BASE_URL / AUTH_TOKEN 자동 설정)
 ```
