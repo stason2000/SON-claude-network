@@ -1,1 +1,11 @@
 .claude/settings.local.json
+
+# secrets / downloads
+.env
+.env.*
+!.env.example
+*cookies*.txt
+*.mp3
+*.mp4
+*.srt
+*.webm
