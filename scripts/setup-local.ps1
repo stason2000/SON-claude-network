@@ -12,7 +12,14 @@
 
   if (-not (Have 'py') -and -not (Have 'python')) { Run "$wg Python.Python.3.12"; RefreshPath }
   if (-not (Have 'ffmpeg')) { Run "$wg Gyan.FFmpeg"; RefreshPath }
-  if ($env:WITHOUT_OMNIROUTE -ne '1' -and -not (Have 'npm')) { Run "$wg OpenJS.NodeJS.LTS"; RefreshPath }
+  # OmniRoute는 Node 22.22.2 이상(23 제외) 또는 24~26 필요
+  function NodeOk { if (-not (Have 'node')) { return $false }; $v = [version]((node -v) -replace '^v',''); (($v.Major -eq 22 -and $v -ge [version]'22.22.2') -or ($v.Major -ge 24 -and $v.Major -lt 27)) }
+  $omni = ($env:WITHOUT_OMNIROUTE -ne '1')
+  if ($omni -and -not (NodeOk)) {
+    try { Run "$wg OpenJS.NodeJS.LTS" } catch { Write-Host 'Node 설치/업그레이드 경고(이미 최신일 수 있음)' }
+    RefreshPath
+    if (-not (NodeOk)) { Write-Host 'Node 버전이 낮아 OmniRoute를 건너뜁니다. Node LTS 설치 후 npm install -g omniroute 를 직접 실행하세요.'; $omni = $false }
+  }
 
   $py = if (Have 'py') { 'py' } else { 'python' }
   Run "$py -m pip install --user -U yt-dlp whisper-ctranslate2 requests"
@@ -25,7 +32,7 @@
     RefreshPath
   }
 
-  if ($env:WITHOUT_OMNIROUTE -ne '1') { Run 'npm install -g omniroute' }
+  if ($omni) { Run 'npm install -g omniroute' }
 
   Write-Host ''
   Write-Host '설치 확인:'

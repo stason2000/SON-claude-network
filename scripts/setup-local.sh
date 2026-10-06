@@ -10,6 +10,9 @@ need() { have "$1" || { echo "필요: $1 — $2"; exit 1; }; }
 need git "https://git-scm.com"
 need python3 "https://www.python.org"
 need node "https://nodejs.org (LTS)"
+if [ "${WITHOUT_OMNIROUTE:-0}" != 1 ] && ! node -e 'const [a,b,c]=process.versions.node.split(".").map(Number);process.exit((a==22&&(b>22||(b==22&&c>=2)))||(a>=24&&a<27)?0:1)'; then
+  echo "Node $(node -v)는 OmniRoute에 맞지 않음(22.22.2 이상 또는 24~26 필요). OmniRoute는 건너뜀 - Node LTS 설치 후 npm install -g omniroute"; WITHOUT_OMNIROUTE=1
+fi
 
 if ! have ffmpeg; then
   if have brew; then run brew install ffmpeg
