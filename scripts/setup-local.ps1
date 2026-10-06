@@ -15,7 +15,7 @@
   if ($env:WITH_OMNIROUTE -eq '1' -and -not (Have 'npm')) { Run "$wg OpenJS.NodeJS.LTS"; RefreshPath }
 
   $py = if (Have 'py') { 'py' } else { 'python' }
-  Run "$py -m pip install --user -U yt-dlp whisper-ctranslate2"
+  Run "$py -m pip install --user -U yt-dlp whisper-ctranslate2 requests"
 
   # pip --user 설치 폴더를 PATH에 영구 등록 (없으면 yt-dlp 명령을 못 찾는다)
   if (-not $dry) {

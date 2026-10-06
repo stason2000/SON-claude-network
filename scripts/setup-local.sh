@@ -24,7 +24,7 @@ if have pipx; then
   run pipx install whisper-ctranslate2
 else
   run python3 -m venv "$VENV"
-  run "$VENV/bin/pip" install -U yt-dlp whisper-ctranslate2
+  run "$VENV/bin/pip" install -U yt-dlp whisper-ctranslate2 requests
   export PATH="$VENV/bin:$PATH"
   echo "새 터미널에서도 쓰려면 ~/.zshrc 또는 ~/.bashrc 에 추가: export PATH=\"$VENV/bin:\$PATH\""
 fi

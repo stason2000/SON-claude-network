@@ -22,6 +22,12 @@ Main session runs on the cheaper model (settings.json: sonnet). Before answering
 - Video/Reels/YouTube link pasted -> `video-link`.
 - Anything that can place orders or touches exchange/broker keys -> `trading-guard`.
 - UI work -> `design-taste-frontend`, `ui-ux-pro-max`.
+- Strategy backtest/validation -> `backtest-expert`. "Is the crypto market risk-on?" / regime question -> `crypto-regime-analyzer` (needs network to CoinGecko/Binance public data; works on the user's PC).
+- Files: .xlsx/.csv -> `xlsx`, .docx -> `docx`, .pptx -> `pptx`, .pdf -> `pdf`. Cost/profit tables go in xlsx.
+- Competitor price/review research, web app QA, form/click automation -> `agent-browser`. Respect each site's terms.
+- Bug/test failure -> `systematic-debugging` (root cause first). Before saying "done/fixed" -> `verification-before-completion` (run it, show output).
+- Vague feature request -> `brainstorming`, but only when requirements are unclear; skip it for clear tasks (token cost).
+- Need a skill that is not installed -> `find-skills`.
 - "Build a program/bot" (e.g. 자동매매 구축) -> `build-router`: it picks agent, model and effort by size and risk. Small tasks stay inline; only orders/keys/leverage get the strong-model pipeline (trade-architect, trade-coder, trade-reviewer, quick-helper in `.claude/agents/`).
 
 ## Hard stops
