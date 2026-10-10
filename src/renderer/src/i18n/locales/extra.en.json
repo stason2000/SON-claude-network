@@ -370,5 +370,132 @@
       "noGod": "No orchestrator yet, so a summary can't be requested.",
       "withdraw": "Withdraw consent (turn off)"
     }
+  },
+  "sync": {
+    "nav": "Sync",
+    "loading": "Loading sync status…",
+    "title": "Google account sync",
+    "desc": "Keeps settings the same on your PC and laptop. Uses only the hidden app-specific space (appDataFolder) in your Google Drive; no other Drive files are touched.",
+    "guideHint": "First time? Follow docs/GOOGLE_SETUP.md first.",
+    "cred": {
+      "title": "Login client",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "idPlaceholder": "…apps.googleusercontent.com",
+      "secretPlaceholder": "Paste (not shown again after saving)",
+      "saved": "Saved",
+      "notSaved": "Not set",
+      "save": "Save",
+      "clear": "Clear",
+      "savedNote": "Saved. Now press 'Sign in with Google'.",
+      "writeOnly": "Saved values are encrypted on this computer and never shown again."
+    },
+    "account": {
+      "title": "Google account",
+      "loggedIn": "Signed in",
+      "loggedOut": "Not signed in",
+      "loggingIn": "Waiting for sign-in in the browser…",
+      "login": "Sign in with Google",
+      "loginDone": "Signed in. Try 'Sync now'.",
+      "cancel": "Cancel sign-in",
+      "logout": "Sign out",
+      "browserHint": "Sign in and allow access in the browser window. It is cancelled automatically after 3 minutes.",
+      "scopeNote": "The only permission requested is app configuration data (drive.appdata)."
+    },
+    "run": {
+      "title": "Sync",
+      "now": "Sync now",
+      "syncing": "Syncing…",
+      "done": "Sync finished.",
+      "lastSync": "Last sync: {{time}}",
+      "never": "never",
+      "result": "Uploaded {{uploaded}} · Downloaded {{downloaded}} · Conflicts {{conflicts}} · Skipped {{skipped}} · Unchanged {{unchanged}}",
+      "lastError": "Last failure: {{reason}} ({{time}})",
+      "noError": "No recent failures"
+    },
+    "auto": {
+      "label": "Auto sync",
+      "desc": "When on, syncs at app start and every 15 minutes. (Default: off. API keys are never auto-synced.)"
+    },
+    "device": {
+      "title": "This device's name",
+      "placeholder": "e.g. PC, Laptop",
+      "save": "Save",
+      "saved": "Device name saved.",
+      "host": "Computer name: {{host}} — conflicts are labelled with this name."
+    },
+    "cats": {
+      "title": "What to sync",
+      "settings": "App settings",
+      "departments": "Departments & AI assignment",
+      "rules": "Michael's operating rules",
+      "skills": "Skills",
+      "triggers": "Triggers & schedules",
+      "i18n": "Korean text overrides",
+      "memory": "Memory files",
+      "apikeys": "API keys (encrypted)",
+      "notSynced": "Never synced: each AI's login, API keys (by default), running tasks, terminal history, and device-only settings such as the workspace folder."
+    },
+    "keys": {
+      "title": "Encrypted API-key sync (optional)",
+      "optIn": "Also sync API keys, encrypted (opt-in)",
+      "desc": "When on, API keys are encrypted on this device (AES-256-GCM) with a passphrase you choose before upload. The passphrase is never stored: type it on each device. If you forget it, the synced keys cannot be recovered.",
+      "passphrase": "Sync passphrase",
+      "passphrasePlaceholder": "at least 8 characters",
+      "passphraseHint": "Used only when you press 'Sync now'. Leave empty to skip API keys."
+    },
+    "conflicts": {
+      "title": "Conflicts ({{count}})",
+      "none": "No conflicts",
+      "useAll": "Use this device ({{device}}) for all",
+      "useAllRemote": "Use the other device for all",
+      "thisDevice": "{{device}} version (this device)",
+      "thatDevice": "{{device}} version",
+      "otherDevice": "other device",
+      "modified": "Modified: {{time}}",
+      "missing": "Deleted / missing",
+      "useThis": "Use {{device}} version",
+      "useDeletion": "Delete, like {{device}}",
+      "resolved": "Resolved with the chosen version.",
+      "changedKeys": "Differs in: {{keys}}",
+      "lines": "{{local}} lines only here · {{remote}} lines only on the other device",
+      "backupNote": "The version you do not pick is kept as a copy in the workspace's sync-conflicts folder.",
+      "kind": {
+        "both-modified": "Changed on both devices",
+        "both-added": "Different content on both devices",
+        "local-deleted": "Deleted here, still on the other device",
+        "remote-deleted": "Deleted on the other device, still here",
+        "delete-vs-modify": "Deleted on one side, changed on the other"
+      }
+    },
+    "err": {
+      "noCredentials": "No client ID saved yet.",
+      "notLoggedIn": "Not signed in to Google.",
+      "loginInProgress": "Sign-in already in progress — check the browser.",
+      "loginTimeout": "Sign-in did not finish within 3 minutes and was cancelled.",
+      "loginDenied": "Sign-in was cancelled or access was not allowed.",
+      "loginFailed": "Sign-in failed. Check the client ID/secret and that the client type is 'Desktop app'.",
+      "scopeDenied": "The app-data permission was not granted. Sign in again and tick it.",
+      "authExpired": "Sign-in expired. Please sign in again. (Apps in 'Testing' may expire every 7 days.)",
+      "apiDisabled": "The Google Drive API is not enabled (setup step 2).",
+      "forbidden": "Google refused access. Check that this account is a test user.",
+      "quota": "Your Google Drive storage is full.",
+      "rateLimit": "Too many requests. Try again shortly.",
+      "notFound": "A sync file was not found on Drive. Sync again.",
+      "server": "Google had a temporary problem. Try again shortly.",
+      "network": "Cannot reach the internet.",
+      "badRemote": "Some sync data on Drive was invalid and was not applied.",
+      "tooLarge": "Files that are too large were skipped.",
+      "wrongPassphrase": "Wrong sync passphrase. API keys were not changed.",
+      "passphraseRequired": "A sync passphrase is needed for API keys.",
+      "passphraseTooShort": "The sync passphrase must be at least 8 characters.",
+      "encryptionUnavailable": "Secure storage is unavailable on this computer, so nothing was saved.",
+      "noWorkspace": "No workspace folder is set, so some items were skipped.",
+      "busy": "A sync is already running.",
+      "invalidInput": "The value is not in the expected format.",
+      "conflictChanged": "Something changed meanwhile. Press 'Sync now' and choose again.",
+      "writeFailed": "Could not write a file on this device (permission or location).",
+      "unknown": "An unknown error occurred."
+    }
   }
 }

@@ -24,6 +24,7 @@ import { InstagramSettings } from './InstagramSettings';
 import { AiEnginesSettings } from './AiEnginesSettings';
 import { ConnectorsSettings } from './ConnectorsSettings';
 import { DepartmentsSettings, MichaelRulesSettings } from './MichaelRulesSettings';
+import { SyncSettings } from './SyncSettings';
 import { REALTIME_MODEL } from '@shared/realtimePricing';
 import { RealtimeDevicePicker } from '@/realtime/DevicePicker';
 import { CostHud } from '@/realtime/CostHud';
@@ -182,8 +183,8 @@ const sectionHeadFlush = { ...sectionHead, marginBottom: 0 } as const;
 /** The 2px rule between Settings sections. */
 const sectionRule = { height: 2, background: 'var(--cth-ink-300)' } as const;
 
-export type Section = 'General' | 'Prerequisites' | 'Agents & Models' | 'Autonomy & Budgets' | 'Connections' | 'Voice' | 'Memory & Knowledge';
-const NAV_SECTIONS: Section[] = ['General', 'Prerequisites', 'Agents & Models', 'Autonomy & Budgets', 'Connections', 'Voice', 'Memory & Knowledge'];
+export type Section = 'General' | 'Prerequisites' | 'Agents & Models' | 'Autonomy & Budgets' | 'Connections' | 'Voice' | 'Memory & Knowledge' | 'Sync';
+const NAV_SECTIONS: Section[] = ['General', 'Prerequisites', 'Agents & Models', 'Autonomy & Budgets', 'Connections', 'Voice', 'Memory & Knowledge', 'Sync'];
 /** i18n key for each nav section's label — the Section values themselves stay
  *  as stable identifiers (tab state, deep links). */
 const NAV_SECTION_KEYS: Record<Section, string> = {
@@ -193,7 +194,9 @@ const NAV_SECTION_KEYS: Record<Section, string> = {
   'Autonomy & Budgets': 'settings.nav.autonomyBudgets',
   'Connections': 'settings.nav.connections',
   'Voice': 'settings.nav.voice',
-  'Memory & Knowledge': 'settings.nav.memoryKnowledge'
+  'Memory & Knowledge': 'settings.nav.memoryKnowledge',
+  // Google-Drive sync (#10) — label lives in extra.*.json (설정 → 동기화).
+  'Sync': 'extra.sync.nav'
 };
 
 export function SettingsModal({ config, onClose, initialSection }: SettingsModalProps) {
@@ -1913,6 +1916,9 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                   )}
 
                   {/* VOICE — Free Flow dictation + Realtime Michael (v0.3.4: its own tab) */}
+                  {/* SYNC — Google Drive appDataFolder (#10) */}
+                  {activeSection === 'Sync' && <SyncSettings />}
+
                   {activeSection === 'Voice' && (
                     <>
                       {/* Free Flow (voice dictation) */}
