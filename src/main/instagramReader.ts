@@ -75,9 +75,9 @@ function igSession(): Session {
     s.setPermissionCheckHandler(() => false);
     s.on('will-download', (e) => e.preventDefault());
     s.webRequest.onBeforeRequest((details, cb) => cb({ cancel: !isAllowedRequestUrl(details.url) }));
-    // Present as the Chromium it is: drop the Electron/app tokens from the UA.
-    // (No other fingerprint changes; nothing about Instagram's checks is evaded.)
-    s.setUserAgent(s.getUserAgent().replace(/\s(?:Electron|son-ai-office|SON AI Office)\/\S+/gi, ''));
+    // The User-Agent is deliberately left as Electron's own default: this reader must
+    // not disguise itself to get past Instagram's automation checks. If Instagram
+    // blocks it, the UI says so and offers the paste-the-caption fallback instead.
   }
   return s;
 }
@@ -404,3 +404,7 @@ export function registerInstagramIpc(deps: InstagramDeps): void {
     }
   });
 }
+
+/** Page scripts, exported only so a local smoke test can run them against a
+ *  fixture page (no Instagram involved). */
+export const __pageScripts = { SNAPSHOT_JS, seekJs };
