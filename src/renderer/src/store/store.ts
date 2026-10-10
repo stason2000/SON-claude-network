@@ -18,6 +18,7 @@ import { preferredAgentRole } from '@shared/agentRole';
 import { isInboxNudge } from '@shared/hiveNudge';
 import { refocusAfterRemoval, focusOnLoad, restoreFocus } from './focusMode';
 import { chooseRosterSource } from './rosterSource';
+import { parseWorkspaceLayout, type WorkspaceLayout } from '@shared/workspace';
 
 export type ToolKind =
   | 'Read' | 'Edit' | 'Write' | 'Bash' | 'WebFetch' | 'WebSearch'
@@ -207,6 +208,9 @@ interface State {
    *  fallback for anything that genuinely has no particular agent in mind. */
   ideAgentId: string | null;
   sidebarWidth: number;
+  /** Classic office floor or the workspace view (#6). Per-device, localStorage. */
+  layoutMode: WorkspaceLayout;
+  setLayoutMode: (mode: WorkspaceLayout) => void;
   sidebarTab: SidebarTab;
   godStatus: GodStatus;
   /** Per-agent outgoing message queue (agent id → messages awaiting delivery).
@@ -352,6 +356,10 @@ const LS_QUEUES = 'cth.messageQueues';
 /** Which hive this origin's roster keys were last written for. See rosterSource.ts. */
 const LS_ROSTER_HOME = 'cth.rosterHome';
 const LS_FOCUS_MODE = 'cth.prefersFocusMode';
+const LS_LAYOUT_MODE = 'cth.layoutMode';
+const initialLayoutMode: WorkspaceLayout = (() => {
+  try { return parseWorkspaceLayout(window.localStorage.getItem(LS_LAYOUT_MODE)); } catch { return 'classic'; }
+})();
 
 // Fields that are large or transient — not worth persisting across reloads.
 // contextTokens/contextLimit describe a LIVE session; persisting them showed a
@@ -688,6 +696,12 @@ export const useStore = create<State>((set, get) => ({
   ideOpen: false,
   ideAgentId: null,
   sidebarWidth: initialSidebarWidth,
+  layoutMode: initialLayoutMode,
+  setLayoutMode: (mode) => {
+    const next = parseWorkspaceLayout(mode);
+    try { window.localStorage.setItem(LS_LAYOUT_MODE, next); } catch { /* noop */ }
+    set({ layoutMode: next });
+  },
   sidebarTab: initialSidebarTab,
   godStatus: 'booting',
   messageQueues: initialQueues,

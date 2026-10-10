@@ -33,6 +33,8 @@ import { TaskDetailOverlay } from '@/components/TaskDetailOverlay';
 // Lightweight fork: the IDE (Monaco etc.) is only fetched when first opened.
 const IdePanel = lazy(() => import('@/ide/IdePanel').then((m) => ({ default: m.IdePanel })));
 import { useHoldOptionToTalk } from '@/freeflow/holdOption';
+import { WorkspaceView } from '@/components/workspace/WorkspaceView';
+import { MeetingRecordingBadge } from '@/components/workspace/MeetingPanel';
 import brandLogo from '@brand/logo.png?url';
 
 // Injected at build time from package.json (see electron.vite.config.ts).
@@ -60,6 +62,8 @@ export function App() {
   const setSidebarWidth = useStore(s => s.setSidebarWidth);
   const ideOpen = useStore(s => s.ideOpen);
   const setIdeOpen = useStore(s => s.setIdeOpen);
+  const layoutMode = useStore(s => s.layoutMode);
+  const setLayoutMode = useStore(s => s.setLayoutMode);
 
   const [config, setConfig] = useState<HarnessConfig | null>(null);
   // Whether the user has passed the launch-time hive picker this session. Starts
@@ -313,6 +317,8 @@ export function App() {
         }}>
           {config.autoMode ? t('extra.app.autoOn') : t('extra.app.autoOff')}
         </span>
+        {/* #6: visible on every view while a meeting is being recorded. */}
+        <MeetingRecordingBadge />
         {/* v0.3.4: theme + fullscreen live HERE (top right), not buried in the
             terminal header — and the theme darkens the whole app, terminals
             included (design/theme.ts + tokens.css dark block). */}
@@ -347,6 +353,29 @@ export function App() {
         >
           {appThemeNow === 'dark' ? '☀' : '☾'}
         </button>
+        {/* #6: classic office floor ↔ workspace view (per device, default classic). */}
+        <div
+          className="cth-titlebar-nodrag"
+          role="group"
+          aria-label={t('extra.workspace.layoutToggle')}
+          style={{ display: 'inline-flex', height: 28, boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)', borderRadius: 2, overflow: 'hidden' }}
+        >
+          {(['classic', 'workspace'] as const).map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setLayoutMode(mode)}
+              aria-pressed={layoutMode === mode}
+              style={{
+                padding: '0 10px', border: 'none', cursor: 'pointer',
+                fontFamily: 'var(--cth-font-ui)', fontSize: 12,
+                background: layoutMode === mode ? 'var(--cth-cream-300)' : 'var(--cth-paper-100)',
+                color: 'var(--cth-ink-900)', fontWeight: layoutMode === mode ? 600 : 400
+              }}
+            >
+              {t(mode === 'classic' ? 'extra.workspace.classic' : 'extra.workspace.workspace')}
+            </button>
+          ))}
+        </div>
         {/* v0.3.4: the IDE button moved to agent level — every agent's header
             (sidebar detail, god Command Center, fullscreen) carries it. */}
         <button
@@ -395,6 +424,7 @@ export function App() {
 
       </div>
 
+      {layoutMode === 'workspace' ? <WorkspaceView config={config} /> : (
       <div style={{
         flex: 1, minHeight: 0,
         display: 'flex',
@@ -479,8 +509,9 @@ export function App() {
           )}
         </div>
       </div>
+      )}
 
-      <AgentStrip config={config} />
+      {layoutMode !== 'workspace' && <AgentStrip config={config} />}
 
       {addAgentOpen && (
         <AddAgentModal

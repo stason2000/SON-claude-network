@@ -358,6 +358,12 @@ export interface HarnessConfig {
    *  'off'; 'groq' sends audio to Groq (external), 'local' is not bundled yet.
    *  Anything else is read as 'off' (normalizeTranscribeMode). */
   instagramTranscribe?: 'off' | 'groq' | 'local';
+  /** Meeting transcription (#6): the user accepted the disclosure (audio goes to
+   *  Groq). Default false — no meeting can start until this is true. */
+  meetingsConsent?: boolean;
+  /** Keep each meeting's raw audio chunks next to the transcript. Default false:
+   *  audio then lives only in memory until it is transcribed. */
+  meetingsKeepAudio?: boolean;
 
   // ─── Realtime Michael (premium speech-to-speech voice orchestrator) ─────────
   /** True ONLY while a Realtime Michael voice session is live: the renderer
@@ -471,6 +477,8 @@ const DEFAULTS: HarnessConfig = {
   groqApiKey: undefined,
   freeflowModel: 'whisper-large-v3-turbo',
   instagramTranscribe: 'off',
+  meetingsConsent: false,
+  meetingsKeepAudio: false,
   realtimeVoiceEnabled: false,
   realtimeIdleDisconnectMs: 180_000,
   webhookEnabled: false,

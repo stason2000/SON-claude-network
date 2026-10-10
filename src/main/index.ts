@@ -52,6 +52,7 @@ import {
 import { transcribeWithGroq, DEFAULT_GROQ_MODEL } from './freeflow';
 import { registerRealtimeIpc } from './realtime';
 import { registerInstagramIpc } from './instagramReader';
+import { registerMeetingsIpc, meetingMicArmed, shutdownMeetings } from './meetingsIpc';
 import { registerRealtimeActionIpc } from './realtimeActions';
 import { initCompletionWatcher } from './realtimeCompletionWatcher';
 import type { TaskCard, InboxMessage } from './realtimeCompletionWatcher';
@@ -63,6 +64,7 @@ import { IntegrationBroker } from './integrationBroker';
 import * as integrations from './integrations';
 import { electronApiKeyStore, registerApiKeyIpc } from './apiKeys';
 import { defaultRulesPath, registerMichaelRulesIpc } from './michaelRules';
+import { initSync } from './sync';
 import { prepareApiAgentSpawn } from './apiAgent';
 import { getApiConnector } from '../shared/connectors';
 import { validateBaseUrl, buildAuthHeaders, resolveUpstreamUrl, secretRefFor, INTEGRATION_TEMPLATES } from '../shared/integrations';
@@ -2371,17 +2373,22 @@ function createWindow(opts: { floor?: boolean } = {}): BrowserWindow {
     return cfg.freeflowEnabled === true || cfg.realtimeVoiceEnabled === true;
   };
   const ses = win.webContents.session;
-  ses.setPermissionRequestHandler((_wc, permission, callback, details) => {
+  // Meeting transcription (#6) opens the gate only while a meeting is actually
+  // recording, only for audio, and only for one of the app's own windows.
+  const meetingMicFor = (reqWc: Electron.WebContents | null): boolean =>
+    meetingMicArmed() && !!reqWc && [...allWindows].some((w) => !w.isDestroyed() && w.webContents === reqWc);
+  ses.setPermissionRequestHandler((reqWc, permission, callback, details) => {
     if (permission === 'media') {
       const mediaTypes = details && 'mediaTypes' in details ? details.mediaTypes : undefined;
       const wantsAudio = !mediaTypes || mediaTypes.includes('audio');
-      callback(micFeatureLive() && wantsAudio);
+      const wantsVideo = !!mediaTypes && mediaTypes.includes('video');
+      callback(wantsAudio && (micFeatureLive() || (!wantsVideo && meetingMicFor(reqWc))));
       return;
     }
     callback(true);
   });
-  ses.setPermissionCheckHandler((_wc, permission) => {
-    if (permission === 'media') return micFeatureLive();
+  ses.setPermissionCheckHandler((reqWc, permission) => {
+    if (permission === 'media') return micFeatureLive() || meetingMicFor(reqWc);
     return true;
   });
 
@@ -3198,6 +3205,17 @@ registerApiKeyIpc(ipcMain, apiKeyStore, (id) => !!getApiConnector(id));
 // Michael's operating rules file (<workspace home>/michael-rules.md; see michaelRules.ts).
 registerMichaelRulesIpc(ipcMain, () => readConfig().harnessHome, () =>
   defaultRulesPath({ packaged: app.isPackaged, resourcesPath: process.resourcesPath, appPath: app.getAppPath() }));
+// Google-Drive settings sync (#10; src/main/sync). Write-only credentials, no token over IPC.
+initSync({
+  ipc: ipcMain,
+  apiKeyStore,
+  providerKeys: {
+    backends: Object.keys(BACKEND_KEY_ENV),
+    get: (b) => integrations.getSecret(providerKeyRef(b)),
+    set: (b, k) => { integrations.setSecret(providerKeyRef(b), k); }
+  },
+  onTriggersApplied: () => syncMissions()
+});
 ipcMain.handle('providerKey:set', (_evt, payload: unknown) => {
   const p = (payload ?? {}) as { backend?: unknown; key?: unknown };
   if (typeof p.backend !== 'string' || !(p.backend in BACKEND_KEY_ENV)) return { ok: false, error: 'unknown backend' };
@@ -4484,6 +4502,10 @@ registerRealtimeIpc();
 // All policy (host allow-list, isolated session, no password handling) lives in
 // ./instagramReader; transcription is OFF unless the user picks an engine.
 registerInstagramIpc({ readConfig, writeConfig, getMainWindow: () => mainWindow });
+
+// ─── IPC: Meeting transcription (#6) — opt-in, own mic only, Groq key stays here.
+registerMeetingsIpc({ readConfig, writeConfig });
+app.on('will-quit', () => shutdownMeetings());
 
 // ─── IPC: Realtime Michael voice ACTIONS (rt-5, Phase 2) ─────────────────────
 // Thin adapters over the SAME main fns the god PTY already uses. ALL of the safety

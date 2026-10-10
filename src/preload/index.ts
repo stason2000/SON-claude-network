@@ -2,6 +2,8 @@ import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'ele
 import type { AgentProvider } from '../shared/agentProvider';
 import type { HireManifest } from '../shared/hire';
 import type { IgReadResult, InstagramStatus, InstagramTranscribeMode } from '../shared/instagram';
+import type { MeetingFileInfo, MeetingStatus } from '../shared/meetings';
+import type { SyncReply, SyncStatus } from '../shared/sync/status';
 export type { HireManifest } from '../shared/hire';
 import type { IntegrationRecord, IntegrationTemplate } from '../shared/integrations';
 export type { IntegrationRecord, IntegrationTemplate } from '../shared/integrations';
@@ -1292,6 +1294,23 @@ const api = {
   /** Clear the in-app browser's Instagram cookies/storage. */
   instagramLogout: (): Promise<{ ok: boolean; error?: string }> => ipcRenderer.invoke('instagram:logout'),
 
+  // ─── Meeting transcription (#6) — opt-in; replies never carry the Groq key ──
+  meetingsStatus: (): Promise<MeetingStatus> => ipcRenderer.invoke('meetings:status'),
+  meetingsSetPrefs: (patch: { consent?: boolean; keepAudio?: boolean }): Promise<MeetingStatus> =>
+    ipcRenderer.invoke('meetings:setPrefs', patch),
+  meetingsStart: (arg: { title: string }): Promise<{ ok: true; id: string; fileName: string; filePath: string; startedAt: number } | { ok: false; error: string }> =>
+    ipcRenderer.invoke('meetings:start', arg),
+  meetingsChunk: (arg: { id: string; seq: number; startMs: number; endMs: number; audio: ArrayBuffer | null; mimeType: string }): Promise<{ ok: true; preview: string[]; capped: boolean } | { ok: false; error: string }> =>
+    ipcRenderer.invoke('meetings:chunk', arg),
+  meetingsStop: (arg: { id: string; endMs?: number; reason?: string }): Promise<{ ok: true; fileName: string; filePath: string; durationMs: number; failed: number; gaps: number } | { ok: false; error: string }> =>
+    ipcRenderer.invoke('meetings:stop', arg),
+  meetingsList: (): Promise<{ ok: true; files: MeetingFileInfo[]; dir: string } | { ok: false; error: string }> =>
+    ipcRenderer.invoke('meetings:list'),
+  meetingsPathFor: (name: string): Promise<{ ok: true; path: string } | { ok: false; error: string }> =>
+    ipcRenderer.invoke('meetings:pathFor', name),
+  meetingsOpenFolder: (): Promise<{ ok: boolean; error?: string }> => ipcRenderer.invoke('meetings:openFolder'),
+  meetingsOpenFile: (name: string): Promise<{ ok: boolean; error?: string }> => ipcRenderer.invoke('meetings:openFile', name),
+
   // ─── Integrations registry (Phase 2 — labeled REST endpoints via the secret broker) ──
   // Bridges the §6 IPC surface for the Settings UI. WRITE-ONLY secret contract end to
   // end: `integrationsList` returns records with secretRef redacted to `hasSecret`;
@@ -1335,6 +1354,29 @@ const api = {
     ipcRenderer.invoke('michaelRules:set', text),
   michaelRulesReset: (): Promise<{ ok: true; text: string; path: string } | { ok: false; error: string }> =>
     ipcRenderer.invoke('michaelRules:reset'),
+  // Google-Drive settings sync (#10; src/main/sync). Credentials are WRITE-ONLY:
+  // no method returns a token, the client secret or an API key.
+  syncStatus: (): Promise<SyncStatus> => ipcRenderer.invoke('sync:status'),
+  syncSetCredentials: (req: { clientId?: string; clientSecret?: string }): Promise<SyncReply> =>
+    ipcRenderer.invoke('sync:setCredentials', req),
+  syncClearCredentials: (): Promise<SyncReply> => ipcRenderer.invoke('sync:clearCredentials'),
+  syncLogin: (): Promise<SyncReply> => ipcRenderer.invoke('sync:login'),
+  syncCancelLogin: (): Promise<SyncStatus> => ipcRenderer.invoke('sync:cancelLogin'),
+  syncLogout: (): Promise<SyncReply> => ipcRenderer.invoke('sync:logout'),
+  syncNow: (req?: { passphrase?: string }): Promise<SyncReply> => ipcRenderer.invoke('sync:now', req),
+  syncSetOptions: (req: { autoSync?: boolean; apiKeySync?: boolean; deviceLabel?: string; categories?: Partial<Record<string, boolean>> }): Promise<SyncReply> =>
+    ipcRenderer.invoke('sync:setOptions', req),
+  syncResolve: (req: { key: string; choice: 'local' | 'remote'; passphrase?: string }): Promise<SyncReply> =>
+    ipcRenderer.invoke('sync:resolve', req),
+  syncResolveAll: (req: { choice: 'local' | 'remote'; passphrase?: string }): Promise<SyncReply> =>
+    ipcRenderer.invoke('sync:resolveAll', req),
+  onSyncChanged: (cb: (status: SyncStatus) => void): (() => void) => {
+    const h = (_e: IpcRendererEvent, s: SyncStatus) => cb(s);
+    ipcRenderer.on('sync:changed', h);
+    return () => { ipcRenderer.removeListener('sync:changed', h); };
+  },
+  /** <workspace>/i18n-overrides.ko.json, sanitized in main (string leaves only). */
+  i18nKoOverrides: (): Promise<Record<string, unknown>> => ipcRenderer.invoke('i18n:koOverrides'),
   // Realtime Michael (voice orchestrator) — MAIN mints a short-lived EPHEMERAL token
   // from the BYOK OpenAI key; the real key NEVER crosses IPC. `realtimeHasOpenAiKey`
   // is a presence boolean only (gates the voice toggle, like providerKeyHas).

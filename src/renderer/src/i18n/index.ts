@@ -133,4 +133,20 @@ void i18n
     returnNull: false
   });
 
+/**
+ * Korean text overrides (#10): `<workspace>/i18n-overrides.ko.json` (flat dotted
+ * keys or nested), read and sanitized in MAIN (string leaves only, size-capped),
+ * deep-merged over the bundled ko strings. Best effort: no file = no change.
+ */
+export async function applyKoOverrides(): Promise<void> {
+  try {
+    const tree = await window.cth?.i18nKoOverrides?.();
+    if (tree && typeof tree === 'object' && Object.keys(tree).length > 0) {
+      i18n.addResourceBundle('ko', 'translation', tree, true, true);
+      if (i18n.language === 'ko') i18n.emit('languageChanged', 'ko');
+    }
+  } catch { /* overrides are optional */ }
+}
+void applyKoOverrides();
+
 export default i18n;
