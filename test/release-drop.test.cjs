@@ -124,7 +124,7 @@ test('ReleaseDrop renders no action buttons, only a close', () => {
   const src = readDrop();
   const buttons = src.match(/<button\b[\s\S]*?>/g) ?? [];
   assert.equal(buttons.length, 1, 'the release drop must carry exactly one chrome button');
-  assert.ok(/aria-label="Close/.test(buttons[0]), 'the only chrome button must be the close');
+  assert.ok(/aria-label=\{t\('extra\.releaseDrop\.closeLabel'\)\}/.test(buttons[0]), 'the only chrome button must be the close');
   assert.ok(!/Star|Restart|Later|Download|Open release/i.test(src.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '')),
     'no release action may be a chrome button');
 });
@@ -212,7 +212,7 @@ test('the loader reveals on onLoad OR a timeout cap — never on onLoad alone', 
   assert.match(src, /onLoad=\{reveal\}/, 'the iframe onLoad must reveal');
   // …and a timeout races it, so a delayed/never-firing onLoad cannot hang the loader.
   assert.match(src, /setTimeout\(reveal, REVEAL_TIMEOUT_MS\)/, 'a timeout cap must also reveal');
-  assert.match(src, /clearTimeout\(t\)/, 'the timer is cleared on unmount');
+  assert.match(src, /clearTimeout\((t|timer)\)/, 'the timer is cleared on unmount');
   // The cap is a real, stated number, not left implicit.
   assert.match(src, /REVEAL_TIMEOUT_MS = \d{3,5}/, 'the timeout is a named constant');
 });

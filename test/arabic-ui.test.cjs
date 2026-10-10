@@ -173,7 +173,7 @@ test('no unbundled webfont rides in with the Arabic locale', () => {
 
 test('English is still the default, and still not auto-detected', () => {
   const code = strip(read('src/renderer/src/i18n/index.ts'));
-  assert.match(code, /return 'en';/, 'the fallback language must stay English');
+  assert.match(code, /return 'ko';/, 'the default language is Korean in this fork');
   assert.match(code, /fallbackLng: 'en'/, 'a missing Arabic key must fall back to English');
   assert.ok(!code.includes('navigator'),
     'adding a locale must not turn on OS auto-detect');

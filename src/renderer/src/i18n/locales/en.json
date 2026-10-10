@@ -651,18 +651,7 @@
       "createPick": "create / pick",
       "pick": "pick",
       "notePlain": "You won't need to open this folder day-to-day — it's just where the app keeps its notes so nothing is lost when you restart.",
-      "note": "Think of this as the \"town hall.\" The harness pins agent state there so sessions can be picked back up after a restart.",
-      "conflictWorkspace": "This folder already contains a workspace. Nothing will be overwritten or deleted.",
-      "conflictFiles": "This folder already has other files in it. Nothing will be overwritten or deleted, but the app will add its own files next to them.",
-      "useExisting": "load existing workspace",
-      "useAnyway": "use this folder as is",
-      "pickOther": "pick another folder"
-    },
-    "homeErr": {
-      "noPermission": "This folder can't be written to. Pick a folder inside your user folder, or fix its permissions.",
-      "noSpace": "There isn't enough free space on this drive (about 200 MB needed). Free up space or pick another drive.",
-      "readOnly": "This location is read-only. Pick another folder.",
-      "notFolder": "That path is a file or contains a file where a folder should be. Pick another folder."
+      "note": "Think of this as the \"town hall.\" The harness pins agent state there so sessions can be picked back up after a restart."
     },
     "orchestrator": {
       "descPlain": "{{godName}} is your clone — he reads your requests, breaks them into tasks, and hands them to the right agent. He's the boss of the floor; you're still the boss of him. Choose which AI engine powers him.",

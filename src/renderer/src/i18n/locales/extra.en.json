@@ -172,5 +172,51 @@
   },
   "queue": {
     "folder": "folder"
+  },
+  "connectors": {
+    "title": "Connectors",
+    "desc": "Every AI this office can use, and how it connects. Strengths are used for department assignment. API keys are encrypted on this computer and never shown again.",
+    "kind": {
+      "cli": "Terminal CLI",
+      "api": "API (key)",
+      "unavailable": "Not connectable"
+    },
+    "strength": {
+      "coding": "Coding",
+      "research": "Research",
+      "image": "Image",
+      "video": "Video",
+      "writing": "Writing",
+      "review": "Review",
+      "general": "General"
+    },
+    "keyNotNeeded": "No key needed (CLI signs in itself)",
+    "keySet": "Key saved",
+    "keyMissing": "No key",
+    "keyPlaceholder": "Paste key ({{hint}}) — write-only",
+    "save": "Save",
+    "clear": "Clear",
+    "saved": "Saved (encrypted).",
+    "cleared": "Key removed.",
+    "failed": "Could not save the key.",
+    "unavailable": "Not connectable. Reason: {{reason}}",
+    "unverified": "Unverified",
+    "docs": "Docs",
+    "hireHint": "Hire: Add Agent → Custom → command \"{{command}}\"",
+    "addAgentApi": "API connectors",
+    "addAgentApiHint": "Pick one to run an API connector as a worker (save its key in Settings → Connectors first)."
+  },
+  "homeSetup": {
+    "conflictWorkspace": "This folder already contains a workspace. Nothing will be overwritten or deleted.",
+    "conflictFiles": "This folder already has other files in it. Nothing will be overwritten or deleted, but the app will add its own files next to them.",
+    "useExisting": "load existing workspace",
+    "useAnyway": "use this folder as is",
+    "pickOther": "pick another folder",
+    "err": {
+      "noPermission": "This folder can't be written to. Pick a folder inside your user folder, or fix its permissions.",
+      "noSpace": "There isn't enough free space on this drive (about 200 MB needed). Free up space or pick another drive.",
+      "readOnly": "This location is read-only. Pick another folder.",
+      "notFolder": "That path is a file or contains a file where a folder should be. Pick another folder."
+    }
   }
 }

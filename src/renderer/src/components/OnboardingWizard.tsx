@@ -194,7 +194,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   };
 
   const homeErrorText = (code?: string, fallback?: string) =>
-    code && code !== 'other' ? t(`onboarding.homeErr.${code}`) : (fallback ?? t('onboarding.errCreateHome'));
+    code && code !== 'other' ? t(`extra.homeSetup.err.${code}`) : (fallback ?? t('onboarding.errCreateHome'));
 
   const pickRepo = async () => {
     setError(undefined);
@@ -408,14 +408,14 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                 {homeConflict && (
                   <div style={{ border: '1px solid var(--cth-ink-500)', padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
                     <div style={{ lineHeight: '20px' }}>
-                      {homeConflict.looksLikeWorkspace ? t('onboarding.home.conflictWorkspace') : t('onboarding.home.conflictFiles')}
+                      {homeConflict.looksLikeWorkspace ? t('extra.homeSetup.conflictWorkspace') : t('extra.homeSetup.conflictFiles')}
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <PixelButton variant="primary" size="md" onClick={() => { setHomeAccepted(home.trim()); setHomeConflict(null); void finish(home.trim()); }}>
-                        {homeConflict.looksLikeWorkspace ? t('onboarding.home.useExisting') : t('onboarding.home.useAnyway')}
+                        {homeConflict.looksLikeWorkspace ? t('extra.homeSetup.useExisting') : t('extra.homeSetup.useAnyway')}
                       </PixelButton>
                       <PixelButton variant="secondary" size="md" onClick={pickHome}>
-                        {t('onboarding.home.pickOther')}
+                        {t('extra.homeSetup.pickOther')}
                       </PixelButton>
                     </div>
                   </div>

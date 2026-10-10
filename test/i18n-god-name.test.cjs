@@ -97,7 +97,7 @@ test('with nothing saved the app starts in English, never the OS locale', () => 
   const fn = src.slice(src.indexOf('function detectLanguage'));
   const body = fn.slice(0, fn.indexOf('\n}'));
   assert.doesNotMatch(body, /navigator/, 'detectLanguage reads the OS locale again');
-  assert.match(body, /return 'en';/, 'detectLanguage does not fall back to English');
+  assert.match(body, /return 'ko';/, 'detectLanguage must fall back to Korean (this fork is Korean-first)');
 });
 
 test('godName reaches i18next as a default variable, so no call site must pass it', () => {

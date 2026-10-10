@@ -60,6 +60,9 @@ import { analytics, isRendererMessageSurface } from './analytics';
 import type { SpawnFailReason } from './analytics';
 import { IntegrationBroker } from './integrationBroker';
 import * as integrations from './integrations';
+import { electronApiKeyStore, registerApiKeyIpc } from './apiKeys';
+import { prepareApiAgentSpawn } from './apiAgent';
+import { getApiConnector } from '../shared/connectors';
 import { validateBaseUrl, buildAuthHeaders, resolveUpstreamUrl, secretRefFor, INTEGRATION_TEMPLATES } from '../shared/integrations';
 import { RosterStore } from './roster';
 import { buildWorkerLaunch } from './workerLaunch';
@@ -2594,6 +2597,16 @@ function findCodexHomeForSession(sessionId: string, siblingsRoot: string): strin
   }
 }
 
+/** Encrypted (safeStorage) key store for 'api' connectors — main-only. */
+const apiKeyStore = electronApiKeyStore();
+/** Absolute path to the bundled `api-agent.cjs`. Packaged: extraResources root;
+ *  dev: the repo's resources/ dir (same pattern as md-slack-reply.cjs). */
+function apiAgentScriptPath(): string {
+  return app.isPackaged
+    ? join(process.resourcesPath, 'api-agent.cjs')
+    : join(app.getAppPath(), 'resources', 'api-agent.cjs');
+}
+
 /** Spawn options shared by the `pty:spawn` IPC handler and the god-triggered
  *  ephemeral-worker watcher. */
 type AgentSpawnOptions = SpawnOptions & { hive?: AgentMeta; isolate?: boolean; resume?: boolean; requireResume?: boolean; resumeSessionId?: string; provider?: AgentProvider; noAutoInstall?: boolean };
@@ -2648,6 +2661,28 @@ async function spawnAgentCore(opts: AgentSpawnOptions, owner: Electron.WebConten
   // the missing-CLI relaunch (the only re-entry, index.ts install-exit handler) does
   // NOT double-count a single user attempt — it is the SAME attempt continuing.
   if (!opts.noAutoInstall) analytics.track('agent_spawn_attempted', { provider });
+  // ── API connector agents (`son-api <connectorId>`) ─────────────────────────────
+  // Rewrite the sentinel into `<electron-as-node> api-agent.cjs --connector <id>`
+  // and inject the decrypted key into the CHILD env only (never argv, never logged,
+  // never returned). The rewritten command is an existing absolute path, so the
+  // missing-CLI installer below must not run for it.
+  {
+    const apiSpawn = prepareApiAgentSpawn(opts.command, opts.args, {
+      execPath: process.execPath,
+      scriptPath: apiAgentScriptPath(),
+      getKey: (id) => apiKeyStore.getKeyForSpawn(id)
+    });
+    if (apiSpawn && 'error' in apiSpawn) {
+      analytics.track('agent_spawn_failed', { provider, reason: 'spawn_error' });
+      return { ok: false, error: apiSpawn.error };
+    }
+    if (apiSpawn) {
+      opts.command = apiSpawn.command;
+      opts.args = apiSpawn.args;
+      opts.env = { ...(opts.env ?? {}), ...apiSpawn.env };
+      opts.noAutoInstall = true;
+    }
+  }
   // ── Missing engine CLI → run its installer visibly (pre-spawn) ───────────────
   // If the agent's engine binary (claude/codex/…) isn't installed, spawning it
   // just dies with "— process exited (code 1) —" and the user has no idea why.
@@ -3155,6 +3190,9 @@ ipcMain.handle('integrations:remove', (_evt, payload: unknown) => {
 // can SET a key and ASK whether one is set (boolean) — it can never read the
 // plaintext back. Keys are materialized MAIN-ONLY at spawn (spawnAgentCore). Base
 // URLs are non-secret and ride HarnessConfig.providerBaseUrls (normal config save).
+// ─── IPC: API-connector keys (write-only; see apiKeys.ts) ─────────────────────
+// set / has / clear only — there is deliberately no channel that returns a key.
+registerApiKeyIpc(ipcMain, apiKeyStore, (id) => !!getApiConnector(id));
 ipcMain.handle('providerKey:set', (_evt, payload: unknown) => {
   const p = (payload ?? {}) as { backend?: unknown; key?: unknown };
   if (typeof p.backend !== 'string' || !(p.backend in BACKEND_KEY_ENV)) return { ok: false, error: 'unknown backend' };

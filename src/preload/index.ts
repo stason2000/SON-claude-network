@@ -1303,6 +1303,15 @@ const api = {
     ipcRenderer.invoke('providerKey:has', backend),
   providerKeyClear: (backend: string): Promise<{ ok: boolean; error?: string }> =>
     ipcRenderer.invoke('providerKey:clear', backend),
+  // API-connector keys (src/shared/connectors, src/main/apiKeys.ts) — WRITE-ONLY.
+  // Set / clear / ask-whether-set; there is deliberately NO method that returns a
+  // key. The key is decrypted MAIN-only and handed to the API agent's child env.
+  connectorKeySet: (req: { id: string; key: string }): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke('connectorKey:set', req),
+  connectorKeyHas: (id: string): Promise<boolean> =>
+    ipcRenderer.invoke('connectorKey:has', id),
+  connectorKeyClear: (id: string): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke('connectorKey:clear', id),
   // Realtime Michael (voice orchestrator) — MAIN mints a short-lived EPHEMERAL token
   // from the BYOK OpenAI key; the real key NEVER crosses IPC. `realtimeHasOpenAiKey`
   // is a presence boolean only (gates the voice toggle, like providerKeyHas).

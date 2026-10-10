@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
+import { connectorsByKind, apiAgentCommand } from '@shared/connectors';
 import { PixelPanel } from './PixelPanel';
 import { PixelButton } from './PixelButton';
 import { SpritePortrait } from './SpritePortrait';
@@ -1027,6 +1028,30 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                         style={{ ...inputStyle, fontFamily: 'var(--cth-font-mono)' }}
                       />
                     </Row>
+
+                    {provider === 'custom' && (
+                      <Row label={tr('extra.connectors.addAgentApi')}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                            {connectorsByKind('api').map((c) => (
+                              <button
+                                key={c.id}
+                                onClick={() => setCommand(apiAgentCommand(c.id))}
+                                style={{
+                                  padding: '3px 8px 1px', border: 'none', cursor: 'pointer',
+                                  fontFamily: 'var(--cth-font-ui)', fontSize: 12, color: 'var(--cth-ink-900)',
+                                  background: command.trim() === apiAgentCommand(c.id) ? 'var(--cth-sky-light)' : 'var(--cth-cream-100)',
+                                  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)'
+                                }}
+                              >{c.label}</button>
+                            ))}
+                          </div>
+                          <span style={{ fontSize: 12, color: 'var(--cth-ink-500)', lineHeight: '16px' }}>
+                            {tr('extra.connectors.addAgentApiHint')}
+                          </span>
+                        </div>
+                      </Row>
+                    )}
                   </>
                 )}
 
