@@ -1,0 +1,68 @@
+name: Build Windows installer
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/new-session-03qopp]
+    paths-ignore: ['**.md']
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies (rebuilds node-pty / better-sqlite3 for Electron)
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build installer (no publishing)
+        run: npx electron-builder --win --x64 --publish never
+
+      - name: List output
+        shell: pwsh
+        run: Get-ChildItem dist -Recurse -Depth 1 | Select-Object FullName, Length
+
+      # Smoke test 1: the unpacked app starts and stays alive.
+      - name: Smoke test - unpacked app starts
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem dist\win-unpacked -Filter "SON AI Office.exe" | Select-Object -First 1
+          if (-not $exe) { throw "SON AI Office.exe not found in dist\win-unpacked" }
+          $p = Start-Process -FilePath $exe.FullName -PassThru
+          Start-Sleep -Seconds 25
+          if ($p.HasExited) { throw "App exited early with code $($p.ExitCode)" }
+          Write-Host "Unpacked app alive after 25s (pid $($p.Id))"
+          Stop-Process -Id $p.Id -Force
+
+      # Smoke test 2: silent-install the setup .exe, then launch the INSTALLED app.
+      - name: Smoke test - install and launch
+        shell: pwsh
+        run: |
+          $setup = Get-ChildItem dist -Filter "*-setup.exe" | Select-Object -First 1
+          if (-not $setup) { throw "setup exe not found" }
+          $dir = Join-Path $env:RUNNER_TEMP "son-ai-office-install"
+          $inst = Start-Process -FilePath $setup.FullName -ArgumentList "/S","/D=$dir" -PassThru -Wait
+          Write-Host "Installer exit code: $($inst.ExitCode)"
+          $exe = Get-ChildItem $dir -Filter "SON AI Office.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $exe) { Get-ChildItem $dir -Recurse -Depth 1 -ErrorAction SilentlyContinue | Select-Object FullName; throw "Installed exe not found" }
+          $p = Start-Process -FilePath $exe.FullName -PassThru
+          Start-Sleep -Seconds 25
+          if ($p.HasExited) { throw "Installed app exited early with code $($p.ExitCode)" }
+          Write-Host "Installed app alive after 25s"
+          Stop-Process -Id $p.Id -Force
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SON-AI-Office-windows-x64-setup
+          path: dist/*-setup.exe
+          if-no-files-found: error
+          retention-days: 30
