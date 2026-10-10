@@ -205,7 +205,9 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
 
   const removeRepo = (path: string) => setRepos(repos.filter(r => r !== path));
 
-  const finish = async () => {
+  // `acceptedHome` is passed straight from the conflict buttons: setHomeAccepted()
+  // has not been applied yet when finish() runs again in the same tick.
+  const finish = async (acceptedHome: string | null = homeAccepted) => {
     setBusy(true);
     setError(undefined);
     const harnessHome = home.trim(); // whitespace-only is not a folder
@@ -224,7 +226,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       setError(homeErrorText(inspected.errorCode, inspected.error));
       setBusy(false); setStep('home'); return;
     }
-    if (inspected.nonEmpty && homeAccepted !== harnessHome) {
+    if (inspected.nonEmpty && acceptedHome !== harnessHome) {
       setHomeConflict({ looksLikeWorkspace: inspected.looksLikeWorkspace });
       setBusy(false); setStep('home'); return;
     }
@@ -409,7 +411,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                       {homeConflict.looksLikeWorkspace ? t('onboarding.home.conflictWorkspace') : t('onboarding.home.conflictFiles')}
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <PixelButton variant="primary" size="md" onClick={() => { setHomeAccepted(home.trim()); setHomeConflict(null); void finish(); }}>
+                      <PixelButton variant="primary" size="md" onClick={() => { setHomeAccepted(home.trim()); setHomeConflict(null); void finish(home.trim()); }}>
                         {homeConflict.looksLikeWorkspace ? t('onboarding.home.useExisting') : t('onboarding.home.useAnyway')}
                       </PixelButton>
                       <PixelButton variant="secondary" size="md" onClick={pickHome}>
@@ -818,7 +820,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                   </PixelButton>
                 )}
                 {step === 'permissions' && (
-                  <PixelButton variant="primary" size="md" onClick={finish} disabled={busy}>
+                  <PixelButton variant="primary" size="md" onClick={() => { void finish(); }} disabled={busy}>
                     {busy ? t('common.saving') : t('common.finish')}
                   </PixelButton>
                 )}

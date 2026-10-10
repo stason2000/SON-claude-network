@@ -109,7 +109,7 @@
   "updateToast": {
     "downloaded": "업데이트 v{{version}} 다운로드 완료",
     "available": "v{{version}} 사용 가능",
-    "restartHint": "원할 때 SON AI Office을 다시 시작하면 적용됩니다. 자동으로 재시작되지 않습니다.",
+    "restartHint": "원할 때 SON AI Office를 다시 시작하면 적용됩니다. 자동으로 재시작되지 않습니다.",
     "manualHint": "이 설치본은 스스로 업데이트할 수 없습니다. 릴리스 페이지에서 새 빌드를 받으세요.",
     "whatsNew": "새로운 기능",
     "readMore": "더 보기",
