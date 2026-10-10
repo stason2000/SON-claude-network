@@ -11,12 +11,16 @@ const DIRECTION_ROW: Record<Direction, number> = {
   left: 2,
 };
 
+// Frame columns: 0-2 stand/step, 3-4 typing eyes (narrow, blink), 5-6 reading
+// eyes (look left, look right), 7 blocked eyes (wide). Typing holds the narrowed
+// eyes and blinks now and then; reading glances side to side.
 const ANIM_FRAMES: Record<AnimState, number[]> = {
   walk: [0, 1, 2, 1],
-  type: [0, 1, 2, 1],
-  read: [0, 1, 2, 1],
+  type: [3, 3, 3, 3, 3, 4],
+  read: [5, 5, 6, 6],
   idle: [0],
 };
+const BLOCKED_FRAME = 7;
 
 // Render characters a bit larger than their native 18×32 so heads/faces read
 // clearly on the floor. Applied to the container so the leg-crop mask (a child)
@@ -34,6 +38,7 @@ export class CharacterSprite {
   private frameW: number;
   private frameH: number;
   private cropMask: Graphics | null = null;
+  private blocked = false;
 
   constructor(frames: Texture[][]) {
     this.frames = frames;
@@ -85,7 +90,9 @@ export class CharacterSprite {
 
   private getFrames(direction: Direction, anim: AnimState): Texture[] {
     const row = DIRECTION_ROW[direction];
-    return ANIM_FRAMES[anim].map((col) => this.frames[row][col]);
+    const blockedTex = this.blocked ? this.frames[row][BLOCKED_FRAME] : undefined;
+    if (blockedTex) return [blockedTex];
+    return ANIM_FRAMES[anim].map((col) => this.frames[row][col] ?? this.frames[row][0]);
   }
 
   setAnimation(anim: AnimState, direction: Direction): void {
@@ -97,6 +104,14 @@ export class CharacterSprite {
     this.sprite.textures = this.getFrames(direction, anim);
     this.sprite.scale.x = direction === 'left' ? -1 : 1;
     this.sprite.animationSpeed = anim === 'walk' ? 0.15 : anim === 'idle' ? 0.08 : 0.06;
+    this.sprite.play();
+  }
+
+  /** Show the wide "blocked" eyes (only sprites that ship that frame have one). */
+  setBlocked(blocked: boolean): void {
+    if (blocked === this.blocked) return;
+    this.blocked = blocked;
+    this.sprite.textures = this.getFrames(this.currentDirection, this.currentAnim);
     this.sprite.play();
   }
 

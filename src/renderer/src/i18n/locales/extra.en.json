@@ -151,5 +151,23 @@
     "noAgentSelected": "NO AGENT SELECTED",
     "spawnFromStrip": "Spawn an agent from the strip below.",
     "terminalAndBar": "The terminal and command bar will land here."
+  },
+  "actions": {
+    "idle": "idle",
+    "awaiting": "awaiting",
+    "waiting on you": "waiting on you",
+    "waiting on god": "waiting on god",
+    "thinking": "thinking",
+    "starting up": "starting up",
+    "running the floor": "running the floor",
+    "revived after sleep": "revived after sleep",
+    "resumed": "resumed",
+    "recreating terminal…": "recreating terminal…",
+    "reconnecting…": "reconnecting…",
+    "reading inbox": "reading inbox",
+    "heading back to desk": "heading back to desk",
+    "continuing…": "continuing…",
+    "compacting context": "compacting context",
+    "archived": "archived"
   }
 }

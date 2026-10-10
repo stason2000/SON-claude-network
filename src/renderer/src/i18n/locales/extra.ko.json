@@ -151,5 +151,23 @@
     "noAgentSelected": "선택된 에이전트 없음",
     "spawnFromStrip": "아래 목록에서 에이전트를 만드세요.",
     "terminalAndBar": "터미널과 명령 입력창이 여기에 표시됩니다."
+  },
+  "actions": {
+    "idle": "대기",
+    "awaiting": "입력 기다리는 중",
+    "waiting on you": "사용자 확인 기다리는 중",
+    "waiting on god": "팀장 확인 기다리는 중",
+    "thinking": "생각 중",
+    "starting up": "시작하는 중",
+    "running the floor": "사무실 운영 중",
+    "revived after sleep": "절전 후 다시 깨어남",
+    "resumed": "다시 시작함",
+    "recreating terminal…": "터미널 다시 만드는 중…",
+    "reconnecting…": "다시 연결하는 중…",
+    "reading inbox": "받은 메시지 읽는 중",
+    "heading back to desk": "자리로 돌아가는 중",
+    "continuing…": "이어서 진행하는 중…",
+    "compacting context": "대화 내용 정리하는 중",
+    "archived": "보관됨"
   }
 }

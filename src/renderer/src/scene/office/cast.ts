@@ -8,8 +8,10 @@
 
 import { Texture } from 'pixi.js';
 import { paintPortrait, sceneFrameBufs, SCENE_W, SCENE_H } from './portraitArt';
+import { MASCOTS, MASCOT_NAMES, isMascotName, mascotForProvider, mascotSceneFrames, paintMascotPortrait, type MascotName } from './aiMascotArt';
 
 export type OfficeCharacterName =
+  | MascotName
   | 'michael' | 'jim' | 'pam' | 'dwight' | 'kevin' | 'angela'
   | 'oscar' | 'stanley' | 'phyllis' | 'andy' | 'kelly' | 'ryan'
   | 'toby' | 'creed' | 'meredith';
@@ -41,6 +43,23 @@ export const OFFICE_CAST: CastMember[] = [
   { name: 'creed',    displayName: 'Creed',    shirt: '#6b7a4b', blurb: 'Quality assurance' },
   { name: 'meredith', displayName: 'Meredith', shirt: '#b5544a', blurb: 'Supplier relations' },
 ];
+
+/** AI mascots (one per provider) — the characters the floor actually shows. */
+const MASCOT_CAST: CastMember[] = MASCOT_NAMES.map((name) => {
+  const m = MASCOTS[name];
+  const hex = '#' + m.base.map((v) => v.toString(16).padStart(2, '0')).join('');
+  return { name, displayName: m.label, shirt: hex, blurb: m.blurb };
+});
+OFFICE_CAST.unshift(...MASCOT_CAST);
+
+/**
+ * The character an agent is drawn as. Every agent is shown as the mascot of the
+ * AI that runs it (eyes-only; the eyes change with its state), not as one of the
+ * human cast. The stored `character` field is kept for compatibility.
+ */
+export function visualCharacter(agent: { provider?: string | null }): OfficeCharacterName {
+  return mascotForProvider(agent.provider ?? 'claude');
+}
 
 export const CAST_BY_NAME: Record<OfficeCharacterName, CastMember> =
   Object.fromEntries(OFFICE_CAST.map((c) => [c.name, c])) as Record<OfficeCharacterName, CastMember>;
@@ -76,6 +95,16 @@ function bufToTexture(buf: Uint8ClampedArray): Texture {
 export async function getCastFrames(name: OfficeCharacterName): Promise<Texture[][]> {
   const cached = frameCache.get(name);
   if (cached) return cached;
+  if (isMascotName(name)) {
+    // Columns: [walk1, walk2, walk3, type1, type2, read1, read2, blocked].
+    const { front, back } = mascotSceneFrames(name);
+    const f = front.map(bufToTexture);
+    const b = back.map(bufToTexture);
+    const backRow = [b[0], b[1], b[2], b[0], b[0], b[0], b[0], b[0]];
+    const mascotFrames: Texture[][] = [f, backRow, f]; // down, up, right
+    frameCache.set(name, mascotFrames);
+    return mascotFrames;
+  }
   const { front, back } = sceneFrameBufs(name);
   const toRow = (bufs: Uint8ClampedArray[]): Texture[] => {
     const [stand, stepL, stepR] = bufs.map(bufToTexture);
@@ -96,5 +125,6 @@ export async function paintCastPortrait(
   name: OfficeCharacterName,
   scale = 2,
 ): Promise<void> {
+  if (isMascotName(name)) { paintMascotPortrait(ctx, name, scale); return; }
   paintPortrait(ctx, name, scale);
 }

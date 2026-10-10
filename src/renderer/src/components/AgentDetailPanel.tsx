@@ -1,3 +1,4 @@
+import { visualCharacter } from '@/scene/office/cast';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PixelPanel } from './PixelPanel';
@@ -150,7 +151,7 @@ export function AgentDetailPanel({ agent }: AgentDetailPanelProps) {
           display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden',
           flexShrink: 0
         }}>
-          <SpritePortrait character={agent.character} scale={1} />
+          <SpritePortrait character={visualCharacter(agent)} scale={1} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', minWidth: 0, lineHeight: '14px' }}>

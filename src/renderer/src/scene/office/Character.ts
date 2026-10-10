@@ -449,6 +449,7 @@ export class Character {
   setStatusGlyph(glyph: StatusGlyph): void {
     if (glyph === this.statusGlyph) return;
     this.statusGlyph = glyph;
+    this.sprite.setBlocked(glyph === 'blocked');
     this.glyphElapsed = 0;
     if (glyph === 'none') this.overlay.clear();
   }

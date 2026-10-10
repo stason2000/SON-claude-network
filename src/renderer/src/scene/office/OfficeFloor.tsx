@@ -9,7 +9,8 @@ import { Camera } from './Camera';
 import { Character, paintCup } from './Character';
 import { DeskScreen } from './DeskScreen';
 import { MessageEnvelope, type MessageAct } from './MessageEnvelope';
-import { hexToNumber, DEFAULT_CHARACTER } from './cast';
+import { hexToNumber, DEFAULT_CHARACTER, visualCharacter } from './cast';
+import { actionText } from '@/i18n/actionText';
 import { pickSoloLine, pickExchange, type BreakSpot } from './cafeteriaLines';
 import { colors } from '@/design/tokens';
 import { loadTheme, resolveThemeMap, themeTilesetUrls } from './themeLoader';
@@ -149,7 +150,7 @@ function loadTexture(url: string): Promise<Texture> {
  *  gave it, then to a caller-supplied generic. Returns '' for the working state
  *  with nothing concrete yet — the bubble renders an animated "…" for that. */
 function liveActivity(agent: Agent, fallback = ''): string {
-  const action = (agent.action || '').trim();
+  const action = actionText(agent.action);
   if (action) return action;
   return firstWords(agent.lastPrompt) || fallback;
 }
@@ -610,7 +611,8 @@ export function OfficeFloor() {
 
       const emitQuip = (id: string, rt: Runtime, spotIdx: number): void => {
         const spot = cafeSpots[spotIdx];
-        const character = agentById(id)?.character ?? DEFAULT_CHARACTER;
+        const quipAgent = agentById(id);
+        const character = quipAgent ? visualCharacter(quipAgent) : DEFAULT_CHARACTER;
         const seed = Math.floor(Math.random() * 1e6);
         // Out of the boss's earshot, café talk turns to… the boss. In his
         // presence it's the usual harmless quips (the sucking up happens via
@@ -1378,7 +1380,8 @@ export function OfficeFloor() {
       (app as any).__taskBoardPoll = taskBoardPoll;
 
       const addCharacter = async (agent: Agent) => {
-        const charName = theme.cast.byName[agent.character] ? agent.character : theme.cast.defaultCharacter;
+        const wanted = visualCharacter(agent);
+        const charName = theme.cast.byName[wanted] ? wanted : theme.cast.defaultCharacter;
         const member = theme.cast.byName[charName];
         const seatIndex = claimSeat(agent);
         const seatTile: Tile = (seatIndex != null ? seatTiles[seatIndex] : undefined)

@@ -1,3 +1,5 @@
+import { actionText } from '@/i18n/actionText';
+import { visualCharacter } from '@/scene/office/cast';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AgentCard } from './AgentCard';
@@ -134,12 +136,12 @@ export function AgentStrip({ config }: AgentStripProps) {
           <AgentCard
             draggable
             name={a.name}
-            character={a.character}
+            character={visualCharacter(a)}
             accent={a.accent}
             status={a.status}
             ptyId={a.ptyId}
             project={a.project}
-            action={a.action}
+            action={actionText(a.action)}
             progress={a.progress}
             contextTokens={a.contextTokens}
             contextLimit={a.contextLimit}
