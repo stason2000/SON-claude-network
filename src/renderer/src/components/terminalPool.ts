@@ -138,7 +138,9 @@ export function acquireTerminal(ptyId: string, theme?: ThemeMap, fontSize = 14):
     lineHeight: 1.0,
     cursorBlink: true,
     cursorStyle: 'block',
-    scrollback: 100000,
+    // Lightweight fork: 100000 lines per terminal was the single biggest memory
+    // cost of a long session. 10000 still keeps hours of agent output.
+    scrollback: 10000,
     // Guarantee legible text no matter what colors a running program sets.
     // When a program paints a coloured cell background (e.g. a git-diff add line
     // with a green bg, or a yellow-highlighted line) while leaving the default

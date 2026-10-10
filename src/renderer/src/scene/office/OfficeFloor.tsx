@@ -254,7 +254,7 @@ export function OfficeFloor() {
         // with. Render at the real device pixel density instead, floored at 2
         // so the half-scale-supersampled bubble text stays legible even at
         // 100% scaling. autoDensity keeps the canvas CSS size in logical px.
-        resolution: Math.max(window.devicePixelRatio || 1, 2),
+        resolution: window.devicePixelRatio || 1,
         autoDensity: true,
         width: host.clientWidth || 800,
         height: host.clientHeight || 600,
@@ -1704,6 +1704,9 @@ export function OfficeFloor() {
           }
         }
       };
+      // Lightweight fork: 30 fps is plenty for a pixel-art office and halves the
+      // per-frame CPU/GPU work (Pixi defaults to the display rate, 60+).
+      app.ticker.maxFPS = 30;
       app.ticker.add(onTick);
       // init() is async: the floor may already be behind a fullscreen terminal by
       // the time we get here, and app.init() starts the ticker itself.
