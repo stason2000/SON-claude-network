@@ -99,10 +99,10 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
 
   const [home, setHome] = useState<string>('');
   const [repos, setRepos] = useState<string[]>([]);
-  const [autoMode, setAutoMode] = useState<boolean>(true);
+  const [autoMode, setAutoMode] = useState<boolean>(false);
   // Anonymous usage stats (TELEMETRY.md). Default ON (opt-out); persisted by
   // finish() so unchecking before finishing means nothing is ever sent.
-  const [shareStats, setShareStats] = useState<boolean>(true);
+  const [shareStats, setShareStats] = useState<boolean>(false);
   const [godProvider, setGodProvider] = useState<AgentProvider>('claude');
   const [godModel, setGodModel] = useState<string | undefined>(
     providerPreset('claude').recommendedOrchestratorModel

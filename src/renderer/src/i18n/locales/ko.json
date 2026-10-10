@@ -165,11 +165,11 @@
     "reportProblem": "문제 신고",
     "fullChangelog": "전체 변경 내역 →",
     "announcement": "공지",
-    "proLaunch": "v0.5.0은 Munder Difflin Pro와 함께 출시됩니다.",
+    "proLaunch": "v0.5.0은 SON AI Office Pro와 함께 출시됩니다.",
     "proCommunityFree": "커뮤니티 버전은 계속 무료이며, 계속 공개되고, 업데이트도 계속됩니다.",
     "proParagraph": "Pro는 새로운 기능과 연동을 제공하고 연중 계속 추가되며, 커뮤니티 버전보다 항상 앞서 나갑니다. 코딩 에이전트와 에이전트 하네스의 잠재력을 최대한 활용하려는 고급 사용자를 위한 버전입니다. Pro 로드맵에는 모바일 앱도 포함되어 있습니다.",
     "foundersWallTitle": "창립자의 벽에 이름이 있나요?",
-    "foundersWallBody": "Munder Difflin Pro 한 달 무료, 이후 연간 요금제 50% 할인. 벽에 오른 처음 100명께 드립니다.",
+    "foundersWallBody": "SON AI Office Pro 한 달 무료, 이후 연간 요금제 50% 할인. 벽에 오른 처음 100명께 드립니다.",
     "seeTheWall": "벽 보기",
     "joinDiscord": "Discord 참여"
   },
@@ -591,7 +591,7 @@
     },
     "persona": {
       "headline": "24시간 일하는 나의 분신",
-      "body": "Munder Difflin은 이미 쓰고 있는 CLI 에이전트를 나의 분신으로 바꿔 줍니다. 분신은 오래 실행되는 에이전트들로 사무실을 운영하고, 내가 자리를 비운 동안에도 계속 일합니다. 맥락, 기억, 할 일, 자동 실행 조건, 환경, 파일, 연동까지 주변의 모든 것을 관리합니다.",
+      "body": "SON AI Office은 이미 쓰고 있는 CLI 에이전트를 나의 분신으로 바꿔 줍니다. 분신은 오래 실행되는 에이전트들로 사무실을 운영하고, 내가 자리를 비운 동안에도 계속 일합니다. 맥락, 기억, 할 일, 자동 실행 조건, 환경, 파일, 연동까지 주변의 모든 것을 관리합니다.",
       "bodyLocal": " 모든 작업은 이 컴퓨터에서 실행됩니다.",
       "ask": "먼저, 어떤 분이세요? (맞춤 설정에 사용해요)",
       "technicalTitle": "개발을 해요",
@@ -703,7 +703,7 @@
       "openAtLogin": "로그인 시 열기",
       "openAtLoginDesc": "재부팅 후 하네스를 다시 실행해 예약된 임무가 저절로 이어지게 합니다. 확인 창 없이 바로 적용됩니다.",
       "shareStats": "익명 사용 통계 공유",
-      "shareStatsDesc": "Munder Difflin을 개선하는 데 쓰이는 몇 가지 익명 이벤트(앱 열기, 에이전트 실행, 기능 사용)입니다. 프롬프트, 코드, 파일 경로, 에이전트 출력은 절대 포함되지 않습니다. 전체 목록은 TELEMETRY.md에 있으며, 설정에서 언제든 바꿀 수 있어요.",
+      "shareStatsDesc": "SON AI Office을 개선하는 데 쓰이는 몇 가지 익명 이벤트(앱 열기, 에이전트 실행, 기능 사용)입니다. 프롬프트, 코드, 파일 경로, 에이전트 출력은 절대 포함되지 않습니다. 전체 목록은 TELEMETRY.md에 있으며, 설정에서 언제든 바꿀 수 있어요.",
       "stayAwake": "전원 연결 시 절전 방지 (수동)",
       "stayAwakeDescMac": "macOS에서는 이 항목을 직접 설정해야 합니다. 배터리 → 옵션에서 (전원 어댑터 사용 시) \"디스플레이가 꺼져 있을 때 자동으로 잠자기 방지\"를 켜면 화면이 꺼져 있어도 타이머가 계속 실행됩니다. 잠자기 방지 설정이 없으면 Mac이 실제로 잠들지만, 작업은 유지되고 깨어난 뒤 따라잡습니다.",
       "stayAwakeDescWindows": "Windows에서는 이 항목을 직접 설정해야 합니다. 설정 → 시스템 → 전원 및 배터리 → 화면, 절전 모드 및 최대 절전 모드 시간 제한에서 \"배터리 전원 사용 시 절전 모드 전환\"과 \"전원 연결 시\"를 안 함으로 설정하거나 시간을 늘리면 타이머가 계속 실행됩니다. 잠자기 방지 설정이 없으면 Windows가 실제로 잠들지만, 작업은 유지되고 깨어난 뒤 따라잡습니다.",
@@ -842,7 +842,7 @@
     "localEndpoint": "로컬 엔드포인트 · 기본 모델 (엔진별)",
     "defaultModelPlaceholder": "기본 모델 (provider/model)",
     "runningOpenModels": "오픈 모델을 쓰시나요? 단계별 안내:",
-    "runOnOpenModels": "오픈 모델로 Munder Difflin 실행하기",
+    "runOnOpenModels": "오픈 모델로 SON AI Office 실행하기",
     "setUpMacMini": "Mac Mini에 설치하기",
     "autoModeCaveat": "⚠ 자동 모드에서는 이 엔진들이 파일 시스템과 셸에 완전히 접근합니다(샌드박스 없음). Claude의 bypass 모드와 같습니다. 먼저 확인받으려면 자동 모드를 끄세요(일반). 실제 모델 호출을 통한 전체 검증은 사용자의 키 또는 로컬 LLM이 준비되어야 진행할 수 있습니다."
   },
@@ -892,7 +892,7 @@
     "downloadingHeadline": "v{{version}} 내려받는 중",
     "downloadingDetail": "{{percent}}% 완료. 계속 작업하셔도 됩니다. 재시작은 직접 선택하세요.",
     "downloadedHeadline": "v{{version}} 설치 준비 완료",
-    "downloadedDetail": "v{{v}}에서 업데이트를 마치려면 Munder Difflin을 재시작하세요.",
+    "downloadedDetail": "v{{v}}에서 업데이트를 마치려면 SON AI Office을 재시작하세요.",
     "restartBtn": "재시작하여 업데이트",
     "manualDetail": "이 설치본은 스스로 업데이트할 수 없습니다. 릴리스 페이지에서 내려받으세요.",
     "manualDetailReason": "이 설치본은 스스로 업데이트할 수 없습니다 ({{reason}}). 릴리스 페이지에서 내려받으세요.",
@@ -919,7 +919,7 @@
     "webhooks": "웹훅",
     "webhooksBlurb": "외부 시스템이 작업을 보낼 수 있게 합니다.",
     "organisation": "조직",
-    "organisationBlurb": "팀원의 Munder Difflin이 내 Munder Difflin에 메시지를 보낼 수 있게 합니다."
+    "organisationBlurb": "팀원의 SON AI Office이 내 SON AI Office에 메시지를 보낼 수 있게 합니다."
   },
   "orgSection": {
     "acceptMessages": "조직의 메시지 받기",

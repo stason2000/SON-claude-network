@@ -169,5 +169,8 @@
     "continuing…": "continuing…",
     "compacting context": "compacting context",
     "archived": "archived"
+  },
+  "queue": {
+    "folder": "folder"
   }
 }

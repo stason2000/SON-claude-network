@@ -95,6 +95,13 @@ export function MessageQueueComposer({ agent }: MessageQueueComposerProps) {
     if (res.ok) addAttachments(res.files);
   };
 
+  // '+ folder' → OS folder picker; the folder's path is attached like a file, so the
+  // agent is told where to look.
+  const pickFolder = async () => {
+    const res = await window.cth.chooseFolder();
+    if (res.ok) addAttachments([{ path: res.path, name: res.path.split(/[\\/]/).filter(Boolean).pop() ?? res.path }]);
+  };
+
   // Drop files onto the composer → resolve each to its absolute path.
   const onDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -381,12 +388,17 @@ export function MessageQueueComposer({ agent }: MessageQueueComposerProps) {
             pushing Send off-screen. */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, rowGap: 6, flexWrap: 'wrap', minWidth: 0 }}>
           <span style={{ flex: 1 }} />
+          {freeflowEnabled && <FreeFlowButton agentId={agent.id} hasGroqKey={hasGroqKey} />}
           <PixelButton variant="secondary" size="sm" onClick={pickFiles}>
             <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
               <Icon name="plus" /> {t('queueComposer.files')}
             </span>
           </PixelButton>
-          {freeflowEnabled && <FreeFlowButton agentId={agent.id} hasGroqKey={hasGroqKey} />}
+          <PixelButton variant="secondary" size="sm" onClick={pickFolder}>
+            <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+              <Icon name="plus" /> {t('extra.queue.folder')}
+            </span>
+          </PixelButton>
           <PixelButton variant="primary" size="sm" onClick={queueIt} disabled={!canSend}>
             <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
               {t('commandBar.send')} <Icon name="arrow-right" />

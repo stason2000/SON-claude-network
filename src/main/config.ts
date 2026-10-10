@@ -445,8 +445,9 @@ const DEFAULTS: HarnessConfig = {
   missions: [OPS_STANDUP_MISSION],
   notifications: false,
   strongKeepalive: false,
-  autoUpdate: true,
-  telemetryEnabled: true,
+  // This fork never updates itself from upstream releases and sends no usage stats by default.
+  autoUpdate: false,
+  telemetryEnabled: false,
   multiWindow: true,
   tvShowOffices: false,
   officeTheme: 'office',

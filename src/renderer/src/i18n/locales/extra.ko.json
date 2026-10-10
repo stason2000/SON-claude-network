@@ -80,7 +80,7 @@
     "exitFocus": "집중 모드 종료 (Esc)"
   },
   "releaseDrop": {
-    "dialogLabel": "Munder Difflin {{version}} 새 소식",
+    "dialogLabel": "SON AI Office {{version}} 새 소식",
     "releaseNotes": "/ 릴리스 노트",
     "closeLabel": "릴리스 노트 닫기",
     "closeTitle": "닫기 (Esc)",
@@ -109,7 +109,7 @@
   "updateToast": {
     "downloaded": "업데이트 v{{version}} 다운로드 완료",
     "available": "v{{version}} 사용 가능",
-    "restartHint": "원할 때 Munder Difflin을 다시 시작하면 적용됩니다. 자동으로 재시작되지 않습니다.",
+    "restartHint": "원할 때 SON AI Office을 다시 시작하면 적용됩니다. 자동으로 재시작되지 않습니다.",
     "manualHint": "이 설치본은 스스로 업데이트할 수 없습니다. 릴리스 페이지에서 새 빌드를 받으세요.",
     "whatsNew": "새로운 기능",
     "readMore": "더 보기",
@@ -169,5 +169,8 @@
     "continuing…": "이어서 진행하는 중…",
     "compacting context": "대화 내용 정리하는 중",
     "archived": "보관됨"
+  },
+  "queue": {
+    "folder": "폴더"
   }
 }
