@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PixelPanel } from './PixelPanel';
 import { PixelButton } from './PixelButton';
 import { SpritePortrait } from './SpritePortrait';
@@ -30,6 +31,7 @@ export interface EditAgentModalProps {
  * via updateAgent (engine changes apply on the next restart).
  */
 export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
+  const { t } = useTranslation();
   const updateAgent = useStore((s) => s.updateAgent);
   const [config, setConfig] = useState<HarnessConfig | null>(null);
 
@@ -105,7 +107,7 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
           one job — describe an agent — and a tall narrow dialog next to a wide
           one reads as two unrelated screens. */}
       <div onClick={(e) => e.stopPropagation()} style={{ width: 940, maxWidth: '95vw' }}>
-        <PixelPanel variant="dialog" title="EDIT AGENT" style={{ padding: 16 }} noPadding>
+        <PixelPanel variant="dialog" title={t('extra.editAgent.title')} style={{ padding: 16 }} noPadding>
           <div style={{
             display: 'flex', flexDirection: 'column', gap: 14,
             padding: 16, maxHeight: '86vh', overflowY: 'auto'
@@ -119,8 +121,8 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
               gap: 16, alignItems: 'start', minHeight: 260
             }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
-            <Section label="Identity" hint="name · character · color">
-              <Row label="Name">
+            <Section label={t('extra.editAgent.identity')} hint={t('extra.editAgent.identityHint')}>
+              <Row label={t('extra.editAgent.name')}>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -130,7 +132,7 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
                 />
               </Row>
 
-              <Row label="Character">
+              <Row label={t('extra.editAgent.character')}>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   {OFFICE_CAST.map((c) => {
                     const active = character === c.name;
@@ -164,7 +166,7 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
                 </div>
               </Row>
 
-              <Row label="Color">
+              <Row label={t('extra.editAgent.color')}>
                 <div style={{ display: 'flex', gap: 6 }}>
                   {ACCENTS.map((a) => (
                     <button
@@ -186,8 +188,8 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
               </Row>
             </Section>
 
-            <Section label="Engine" hint="provider · model · next restart">
-              <Row label="Provider">
+            <Section label={t('extra.editAgent.engine')} hint={t('extra.editAgent.engineHint')}>
+              <Row label={t('extra.editAgent.provider')}>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   {AGENT_PROVIDER_PRESETS.map((p) => {
                     const active = provider === p.id;
@@ -217,12 +219,12 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
               </Row>
 
               {preset.supportsModel && (
-                <Row label="Model">
+                <Row label={t('extra.editAgent.model')}>
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     {(() => {
                       const known = modelsForProvider(provider);
                       return model && !known.some((m) => m.id === model)
-                        ? [...known, { id: model, label: `${model} (current)` }]
+                        ? [...known, { id: model, label: t('extra.editAgent.modelCurrent', { model }) }]
                         : known;
                     })().map((m) => {
                       const active = (model ?? '') === (m.id ?? '');
@@ -231,7 +233,7 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
                           key={m.label}
                           type="button"
                           onClick={() => setModel(m.id)}
-                          title={m.id ?? 'CLI default model'}
+                          title={m.id ?? t('extra.editAgent.cliDefaultModel')}
                           style={{
                             padding: '3px 8px 1px',
                             background: active ? `var(--cth-${accent}-light)` : 'var(--cth-cream-100)',
@@ -251,27 +253,27 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
               )}
 
               <span style={{ fontSize: 12, color: 'var(--cth-ink-500)', lineHeight: '16px' }}>
-                Engine changes are saved for the next restart. Use Command Center → Floor to restart a live session onto a new provider/model now.
+                {t('extra.editAgent.engineNote')}
               </span>
             </Section>
 
               </div>
               <div style={{ minWidth: 0 }}>
-            <Section label="Briefing" hint="description · goal">
-              <Row label="Description">
+            <Section label={t('extra.editAgent.briefing')} hint={t('extra.editAgent.briefingHint')}>
+              <Row label={t('extra.editAgent.description')}>
                 <input
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="what is this agent for"
+                  placeholder={t('extra.editAgent.descriptionPlaceholder')}
                   style={inputStyle}
                 />
               </Row>
 
-              <Row label="Goal (optional)">
+              <Row label={t('extra.editAgent.goalOptional')}>
                 <textarea
                   value={goal}
                   onChange={(e) => setGoal(e.target.value)}
-                  placeholder="long-running directive injected on every prompt"
+                  placeholder={t('extra.editAgent.goalPlaceholder')}
                   rows={4}
                   style={{ ...inputStyle, fontFamily: 'var(--cth-font-ui)', resize: 'vertical', minHeight: 200 }}
                 />
@@ -281,9 +283,9 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
             </div>
 
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 4 }}>
-              <PixelButton variant="ghost" size="md" onClick={onClose}>cancel</PixelButton>
+              <PixelButton variant="ghost" size="md" onClick={onClose}>{t('extra.editAgent.cancel')}</PixelButton>
               <div style={{ flex: 1 }} />
-              <PixelButton variant="primary" size="md" onClick={save}>save changes</PixelButton>
+              <PixelButton variant="primary" size="md" onClick={save}>{t('extra.editAgent.save')}</PixelButton>
             </div>
           </div>
         </PixelPanel>

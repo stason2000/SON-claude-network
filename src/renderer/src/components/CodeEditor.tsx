@@ -10,6 +10,7 @@ import { python } from '@codemirror/lang-python';
 import { html } from '@codemirror/lang-html';
 import { css } from '@codemirror/lang-css';
 import { yaml } from '@codemirror/lang-yaml';
+import { useTranslation } from 'react-i18next';
 import { Icon } from './Icon';
 import { PixelButton } from './PixelButton';
 
@@ -78,6 +79,7 @@ export interface CodeEditorProps {
 export function CodeEditor({
   root, filePath, onOpenInIde, onCopyPath
 }: CodeEditorProps) {
+  const { t } = useTranslation();
   const [content, setContent] = useState<string>('');
   const [originalContent, setOriginalContent] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -162,13 +164,13 @@ export function CodeEditor({
           textTransform: 'uppercase', letterSpacing: 1,
           color: 'var(--cth-ink-700)'
         }}>
-          No file open
+          {t('extra.codeEditor.noFile')}
         </div>
         <div style={{
           fontFamily: 'var(--cth-font-ui)', fontSize: 13,
           color: 'var(--cth-ink-500)'
         }}>
-          Pick a file from the tree to view it here.
+          {t('extra.codeEditor.pickFile')}
         </div>
       </div>
     );
@@ -196,23 +198,23 @@ export function CodeEditor({
         {onCopyPath && (
           <button
             onClick={onCopyPath}
-            title="Copy absolute path"
+            title={t('extra.codeEditor.copyPathTitle')}
             style={editorBtn}
-          >copy path</button>
+          >{t('extra.codeEditor.copyPath')}</button>
         )}
         <button
           onClick={save}
           disabled={!dirty || saveState === 'saving'}
-          title="Save (Cmd-S)"
+          title={t('extra.codeEditor.saveTitle')}
           style={{ ...editorBtn, opacity: dirty ? 1 : 0.5 }}
         >
-          {saveState === 'saving' ? '...' : saveState === 'saved' ? 'saved' : saveState === 'error' ? 'err' : 'save'}
+          {saveState === 'saving' ? '...' : saveState === 'saved' ? t('extra.codeEditor.saved') : saveState === 'error' ? t('extra.codeEditor.err') : t('extra.codeEditor.save')}
         </button>
         {onOpenInIde && (
           <button
             onClick={onOpenInIde}
-            title="Open in the IDE"
-            aria-label="Open in the IDE"
+            title={t('extra.codeEditor.openInIde')}
+            aria-label={t('extra.codeEditor.openInIde')}
             style={editorBtn}
           >
             <Icon name="code" />
@@ -223,7 +225,7 @@ export function CodeEditor({
       {/* Body */}
       <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
         {loading ? (
-          <div style={{ padding: 12, color: 'var(--cth-ink-500)' }}>loading…</div>
+          <div style={{ padding: 12, color: 'var(--cth-ink-500)' }}>{t('extra.codeEditor.loading')}</div>
         ) : error ? (
           <div style={{ padding: 12, color: 'var(--cth-coral)' }}>{error}</div>
         ) : (

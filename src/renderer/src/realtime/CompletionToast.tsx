@@ -17,6 +17,7 @@
  * Branch feat/realtime-michael. See board.md "🎙 REALTIME MICHAEL".
  */
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Icon } from '@/components/Icon';
 import { useStore } from '@/store/store';
 
@@ -43,7 +44,8 @@ const AUTO_DISMISS_MS = 9000;
 const MAX_VISIBLE = 4;
 
 export function CompletionToast(): JSX.Element | null {
-  const godName = useStore((s) => s.agents.find((a) => a.isGod)?.name) ?? 'the orchestrator';
+  const { t } = useTranslation();
+  const godName = useStore((s) => s.agents.find((a) => a.isGod)?.name) ?? t('extra.completion.orchestrator');
   const [toasts, setToasts] = useState<ActiveToast[]>([]);
   // Stable across renders so the subscription's closures always see live timers.
   const timers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
@@ -98,9 +100,9 @@ export function CompletionToast(): JSX.Element | null {
         pointerEvents: 'none'
       }}
     >
-      {toasts.map((t) => (
+      {toasts.map((toast) => (
         <div
-          key={t.key}
+          key={toast.key}
           role="status"
           style={{
             pointerEvents: 'auto',
@@ -124,11 +126,11 @@ export function CompletionToast(): JSX.Element | null {
               textTransform: 'uppercase'
             }}
           >
-            <Icon name="bell" /> {godName} · completed
+            <Icon name="bell" /> {t('extra.completion.completed', { name: godName })}
             <button
               type="button"
-              onClick={() => dismiss(t.key)}
-              aria-label="Dismiss"
+              onClick={() => dismiss(toast.key)}
+              aria-label={t('extra.completion.dismiss')}
               style={{
                 marginLeft: 'auto',
                 border: 'none',
@@ -152,11 +154,11 @@ export function CompletionToast(): JSX.Element | null {
               color: 'var(--cth-ink-900)'
             }}
           >
-            {t.summary}
+            {toast.summary}
           </div>
-          {t.objective && (
+          {toast.objective && (
             <div style={{ fontSize: 12, lineHeight: '17px', color: 'var(--cth-ink-700)' }}>
-              {t.objective}
+              {toast.objective}
             </div>
           )}
         </div>

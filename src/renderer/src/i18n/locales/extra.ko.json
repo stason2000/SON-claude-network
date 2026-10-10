@@ -1,1 +1,155 @@
-{}
+{
+  "editAgent": {
+    "title": "에이전트 편집",
+    "identity": "정보",
+    "identityHint": "이름 · 캐릭터 · 색상",
+    "name": "이름",
+    "character": "캐릭터",
+    "color": "색상",
+    "engine": "엔진",
+    "engineHint": "제공업체 · 모델 · 다음 재시작",
+    "provider": "제공업체",
+    "model": "모델",
+    "modelCurrent": "{{model}} (현재)",
+    "cliDefaultModel": "CLI 기본 모델",
+    "engineNote": "엔진 변경은 다음 재시작 때 적용됩니다. 지금 실행 중인 세션을 새 제공업체/모델로 바꾸려면 사령실 → 사무실에서 재시작하세요.",
+    "briefing": "업무 설명",
+    "briefingHint": "설명 · 목표",
+    "description": "설명",
+    "descriptionPlaceholder": "이 에이전트의 용도",
+    "goalOptional": "목표 (선택)",
+    "goalPlaceholder": "모든 프롬프트에 주입되는 장기 지침",
+    "cancel": "취소",
+    "save": "변경 저장"
+  },
+  "codeEditor": {
+    "noFile": "열린 파일 없음",
+    "pickFile": "트리에서 파일을 선택하면 여기에 표시됩니다.",
+    "copyPathTitle": "절대 경로 복사",
+    "copyPath": "경로 복사",
+    "saveTitle": "저장 (Cmd-S)",
+    "saved": "저장됨",
+    "err": "오류",
+    "save": "저장",
+    "openInIde": "IDE에서 열기",
+    "loading": "불러오는 중…"
+  },
+  "updateBadge": {
+    "ariaCheck": "버전 {{version}} — 업데이트 확인",
+    "clickToDownload": "클릭하여 v{{version}} 다운로드",
+    "downloadHint": "최신 버전을 다운로드해 현재 앱을 교체하세요. 앱이 스스로 업데이트하길 원하나요? 설정 → 업데이트를 확인하세요.",
+    "onOs": "{{os}}에서",
+    "installAria": "업데이트 설치",
+    "downloading": "v{{version}}을(를) 브라우저에서 다운로드하고 있습니다.",
+    "afterDownload": "다운로드가 끝나면 이 앱을 종료하고 현재 버전 위에 새 버전을 설치하세요. 앱을 열어 같은 프로젝트를 선택하면 됩니다. 에이전트, 기억, 설정은 그대로 유지됩니다.",
+    "gotIt": "확인",
+    "latest": "최신 버전을 사용 중입니다.",
+    "newest": "v{{version}}이(가) 최신 릴리스입니다. 방금 확인했습니다."
+  },
+  "quit": {
+    "closingTitle": "영업 종료",
+    "quittingTitle": "지금 종료할까요?",
+    "floorSaved": "사무실 저장 완료 — 내일 만나요",
+    "stillWrapping": "아직 마무리 중…",
+    "wrappingUp": "사무실 마무리 중",
+    "completeBody": "모든 에이전트가 기억을 저장했고 오케스트레이터가 종료를 확인했습니다. 곧 자동으로 닫힙니다.",
+    "progressBody": "오케스트레이터가 영업 종료를 알렸습니다. 모든 직원이 작업을 정리하고 기억을 저장한 뒤 보고하며, 오케스트레이터가 손실이 없음을 확인한 후에만 앱이 닫힙니다.",
+    "workersConfirmed": "직원 {{acked}} / {{total}}명 확인",
+    "workersConfirmedWaiting": "직원 {{acked}} / {{total}}명 확인 — 오케스트레이터 대기 중",
+    "noWorkers": "사무실에 직원 없음 — 오케스트레이터 대기 중",
+    "timeoutNote": "시간이 오래 걸리고 있습니다 (에이전트가 압축 중이거나 도구 호출 중일 수 있어요). 계속 기다리거나, 강제 종료하고 데이터 손실을 감수하세요.",
+    "cancelBack": "취소 — 작업으로 돌아가기",
+    "killing": "종료 중...",
+    "forceQuit": "지금 강제 종료",
+    "agentRunningOne": "에이전트 {{count}}명 실행 중",
+    "agentRunningMany": "에이전트 {{count}}명 실행 중",
+    "warnOne": "하네스를 닫으면 실행 중인 claude 세션이 종료되고, 메모리에 있던 저장되지 않은 진행 내용이 사라집니다. PTY가 종료되면 각 세션의 대화 기록도 사라집니다.",
+    "warnMany": "하네스를 닫으면 실행 중인 claude 세션 {{count}}개가 모두 종료되고, 메모리에 있던 저장되지 않은 진행 내용이 사라집니다. PTY가 종료되면 각 세션의 대화 기록도 사라집니다.",
+    "tip": "팁: <strong>영업 종료</strong>가 안전한 종료 방법입니다. 오케스트레이터가 모든 에이전트의 작업을 커밋하고 기억을 저장하게 하며, 전체 확인이 끝나면 앱이 스스로 닫힙니다. 데이터 손실이 없습니다.",
+    "closingStartFailed": "영업 종료를 시작할 수 없습니다.",
+    "keepRunning": "계속 실행",
+    "closingTime": "영업 종료",
+    "killItAll": "종료하고 나가기",
+    "killAll": "모두 종료하고 나가기"
+  },
+  "pty": {
+    "live": "실행 중 · pty {{id}}",
+    "zoomOut": "축소 (Cmd -)",
+    "zoomReset": "확대/축소 초기화 (Cmd 0)",
+    "zoomIn": "확대 (Cmd +)",
+    "exitFocus": "집중 모드 종료 (Esc)"
+  },
+  "releaseDrop": {
+    "dialogLabel": "Munder Difflin {{version}} 새 소식",
+    "releaseNotes": "/ 릴리스 노트",
+    "closeLabel": "릴리스 노트 닫기",
+    "closeTitle": "닫기 (Esc)",
+    "frameTitle": "{{version}} 새 소식",
+    "loading": "불러오는 중"
+  },
+  "hivePicker": {
+    "title": "하네스 설정 선택",
+    "intro": "<strong>하네스 설정</strong>은 하나의 작업 공간에 대한 모든 것(설정, 에이전트와 기억, 할 일, 자동 실행 조건, 활동 기록)을 앱이 보관하는 폴더입니다. 각 설정은 서로 독립되어 있어 여러 구성을 나란히 사용할 수 있습니다. 작업하던 설정을 열거나, 다른 설정으로 전환하거나, 새로 만드세요.",
+    "current": "현재",
+    "open": "열기",
+    "recent": "최근",
+    "switchTitle": "{{path}}(으)로 전환 (앱이 다시 로드됩니다)",
+    "opening": "여는 중…",
+    "switch": "전환 →",
+    "openingFolder": "{{name}} 여는 중 — 앱이 다시 로드됩니다…",
+    "openExisting": "기존 설정 열기…",
+    "createNew": "새 설정 만들기…",
+    "openFailed": "폴더를 열 수 없습니다."
+  },
+  "completion": {
+    "orchestrator": "오케스트레이터",
+    "completed": "{{name}} · 완료",
+    "dismiss": "닫기"
+  },
+  "updateToast": {
+    "downloaded": "업데이트 v{{version}} 다운로드 완료",
+    "available": "v{{version}} 사용 가능",
+    "restartHint": "원할 때 Munder Difflin을 다시 시작하면 적용됩니다. 자동으로 재시작되지 않습니다.",
+    "manualHint": "이 설치본은 스스로 업데이트할 수 없습니다. 릴리스 페이지에서 새 빌드를 받으세요.",
+    "whatsNew": "새로운 기능",
+    "readMore": "더 보기",
+    "star": "⭐ GitHub에서 스타 누르기",
+    "later": "나중에",
+    "restarting": "재시작 중…",
+    "restart": "재시작하여 업데이트",
+    "download": "{{version}} 다운로드",
+    "openReleases": "릴리스 열기"
+  },
+  "sidebarSplitter": {
+    "title": "드래그하여 크기 조절 · 더블클릭하여 초기화"
+  },
+  "recentText": {
+    "recent": "최근",
+    "idle": "대기",
+    "live": "실시간"
+  },
+  "michaelBooting": {
+    "title": "출근 중",
+    "body": "{{name}}이(가) 사무실에 자리를 잡고 준비하고 있습니다. 잠시만 기다려 주세요…"
+  },
+  "app": {
+    "autoOn": "자동 모드 켜짐",
+    "autoOff": "자동 모드 꺼짐",
+    "lightTheme": "라이트 테마",
+    "darkTheme": "다크 테마",
+    "toggleDark": "다크 모드 전환",
+    "settings": "설정",
+    "exitFocus": "집중 모드 종료 (Esc)",
+    "focusMode": "집중 모드",
+    "toggleFocus": "집중 모드 전환",
+    "emptyFloor": "빈 사무실",
+    "emptyFloorBody": "아직 사무실에 에이전트가 없습니다. 하나를 만들면 실제 claude 출력이 여기에 표시됩니다.",
+    "addAgent": "에이전트 추가",
+    "wakingFloor": "사무실 깨우는 중",
+    "clockingIn": "{{name}}이(가) 출근하는 중입니다.",
+    "terminalWillLand": "자리에 앉으면 터미널이 여기에 표시됩니다.",
+    "noAgentSelected": "선택된 에이전트 없음",
+    "spawnFromStrip": "아래 목록에서 에이전트를 만드세요.",
+    "terminalAndBar": "터미널과 명령 입력창이 여기에 표시됩니다."
+  }
+}

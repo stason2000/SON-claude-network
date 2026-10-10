@@ -1,4 +1,5 @@
 import { Suspense, lazy, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStore, selectedAgent } from '@/store/store';
 import { startMockLoop, stopMockLoop } from '@/store/mockEvents';
 import type { HarnessConfig } from '@/store/config';
@@ -38,6 +39,7 @@ import brandLogo from '@brand/logo.png?url';
 declare const __APP_VERSION__: string;
 
 export function App() {
+  const { t } = useTranslation();
   // Point every {{godName}} string at the orchestrator's real, renameable name.
   useGodNameSync();
   // Mirror the document only for a user who has picked an RTL app language.
@@ -309,7 +311,7 @@ export function App() {
           fontSize: 13,
           color: 'var(--cth-ink-500)'
         }}>
-          {config.autoMode ? 'auto mode on' : 'auto mode off'}
+          {config.autoMode ? t('extra.app.autoOn') : t('extra.app.autoOff')}
         </span>
         {/* v0.3.4: theme + fullscreen live HERE (top right), not buried in the
             terminal header — and the theme darkens the whole app, terminals
@@ -331,8 +333,8 @@ export function App() {
             // harness agents — the user's global Claude theme is never touched.
             void window.cth.updateConfig({ terminalTheme: next });
           }}
-          data-tip={appThemeNow === 'dark' ? 'Light theme' : 'Dark theme'}
-          aria-label="Toggle dark mode"
+          data-tip={appThemeNow === 'dark' ? t('extra.app.lightTheme') : t('extra.app.darkTheme')}
+          aria-label={t('extra.app.toggleDark')}
           style={{
             marginLeft: 'auto',
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -350,8 +352,8 @@ export function App() {
         <button
           className="cth-titlebar-nodrag cth-settings-btn cth-tip"
           onClick={() => { setSettingsSection(undefined); setSettingsOpen(true); }}
-          data-tip="Settings"
-          aria-label="Settings"
+          data-tip={t('extra.app.settings')}
+          aria-label={t('extra.app.settings')}
           style={{
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             width: 28, height: 28, padding: 0,
@@ -377,8 +379,8 @@ export function App() {
               ?? all.find((x) => x.ptyId);
             if (target) useStore.getState().setFullscreen(target.id);
           }}
-          data-tip={fullscreenAgentId ? 'Exit focus mode (Esc)' : 'Focus mode'}
-          aria-label="Toggle focus mode"
+          data-tip={fullscreenAgentId ? t('extra.app.exitFocus') : t('extra.app.focusMode')}
+          aria-label={t('extra.app.toggleFocus')}
           style={{
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             width: 28, height: 28, padding: 0,
@@ -410,14 +412,14 @@ export function App() {
               pointerEvents: 'none'
             }}>
               <div style={{ pointerEvents: 'auto', width: 360 }}>
-                <PixelPanel variant="dialog" title="EMPTY FLOOR" noPadding>
+                <PixelPanel variant="dialog" title={t('extra.app.emptyFloor')} noPadding>
                   <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
                     <p style={{ margin: 0, fontSize: 13, lineHeight: '20px' }}>
-                      No agents on the floor yet. Spawn one to see real claude output stream in here.
+                      {t('extra.app.emptyFloorBody')}
                     </p>
                     <PixelButton variant="primary" size="md" onClick={() => setAddAgentOpen(true)}>
                       <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
-                        <Icon name="plus" /> add agent
+                        <Icon name="plus" /> {t('extra.app.addAgent')}
                       </span>
                     </PixelButton>
                   </div>
@@ -448,10 +450,10 @@ export function App() {
               <div style={{
                 fontFamily: 'var(--cth-font-display)', fontSize: 10, lineHeight: '14px',
                 color: 'var(--cth-ink-500)'
-              }}>WAKING THE FLOOR</div>
+              }}>{t('extra.app.wakingFloor')}</div>
               <p style={{ margin: 0, fontSize: 13, textAlign: 'center', color: 'var(--cth-ink-700)' }}>
-                {bootingGodName} is clocking in.<br />
-                The terminal will land here once he's seated.
+                {t('extra.app.clockingIn', { name: bootingGodName })}<br />
+                {t('extra.app.terminalWillLand')}
               </p>
             </PixelPanel>
           ) : (
@@ -463,14 +465,14 @@ export function App() {
               <div style={{
                 fontFamily: 'var(--cth-font-display)', fontSize: 10, lineHeight: '14px',
                 color: 'var(--cth-ink-500)'
-              }}>NO AGENT SELECTED</div>
+              }}>{t('extra.app.noAgentSelected')}</div>
               <p style={{ margin: 0, fontSize: 13, textAlign: 'center', color: 'var(--cth-ink-700)' }}>
-                Spawn an agent from the strip below.<br />
-                The terminal and command bar will land here.
+                {t('extra.app.spawnFromStrip')}<br />
+                {t('extra.app.terminalAndBar')}
               </p>
               <PixelButton variant="secondary" size="md" onClick={() => setAddAgentOpen(true)}>
                 <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
-                  <Icon name="plus" /> add agent
+                  <Icon name="plus" /> {t('extra.app.addAgent')}
                 </span>
               </PixelButton>
             </PixelPanel>

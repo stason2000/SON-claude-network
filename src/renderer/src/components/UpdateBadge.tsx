@@ -14,11 +14,13 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import { describeUpdate, manualDownloadUrl, manualInstallSteps, pendingVersion, reduceStatus, type UpdateStatus } from '@shared/updateState';
+import { useTranslation } from 'react-i18next';
 import { PixelButton } from './PixelButton';
 
 declare const __APP_VERSION__: string;
 
 export function UpdateBadge() {
+  const { t } = useTranslation();
   const [status, setStatus] = useState<UpdateStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [hover, setHover] = useState(false);
@@ -45,8 +47,8 @@ export function UpdateBadge() {
   // the badge returns to its quiet resting state.
   useEffect(() => {
     if (!checkedOk) return;
-    const t = setTimeout(() => setCheckedOk(false), 3500);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setCheckedOk(false), 3500);
+    return () => clearTimeout(timer);
   }, [checkedOk]);
 
   const view = describeUpdate(status, __APP_VERSION__);
@@ -105,7 +107,7 @@ export function UpdateBadge() {
       onClick={() => { void onClick(); }}
       disabled={!interactive}
       title={view.title}
-      aria-label={view.label ? `${view.title}` : `Version ${__APP_VERSION__} — check for updates`}
+      aria-label={view.label ? `${view.title}` : t('extra.updateBadge.ariaCheck', { version: __APP_VERSION__ })}
       aria-busy={view.busy || busy}
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -146,17 +148,17 @@ export function UpdateBadge() {
         }}
       >
         <div style={{ fontFamily: 'var(--cth-font-mono, monospace)', fontWeight: 700, fontSize: 12.5 }}>
-          Click to download v{pending}
+          {t('extra.updateBadge.clickToDownload', { version: pending })}
         </div>
         <div style={{ marginTop: 4, color: 'var(--cth-ink-700)' }}>
-          Download the latest version and replace the app you have. Prefer the app to update itself? Settings &rarr; Updates.
+          {t('extra.updateBadge.downloadHint')}
         </div>
         <div style={{
           marginTop: 8, fontFamily: 'var(--cth-font-mono, monospace)', fontSize: 9,
           letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--cth-ink-500)'
-        }}>On {steps.os}</div>
+        }}>{t('extra.updateBadge.onOs', { os: steps.os })}</div>
         <ol style={{ margin: '4px 0 0', paddingLeft: 18, color: 'var(--cth-ink-700)' }}>
-          {steps.steps.map((t) => <li key={t}>{t}</li>)}
+          {steps.steps.map((step) => <li key={step}>{step}</li>)}
         </ol>
       </div>
     )}
@@ -165,7 +167,7 @@ export function UpdateBadge() {
     {started && (
       <div
         role="dialog"
-        aria-label="Install the update"
+        aria-label={t('extra.updateBadge.installAria')}
         className="cth-titlebar-nodrag"
         style={{
           position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 400,
@@ -176,17 +178,16 @@ export function UpdateBadge() {
         }}
       >
         <div style={{ fontFamily: 'var(--cth-font-mono, monospace)', fontWeight: 700, fontSize: 13 }}>
-          v{started} is downloading in your browser.
+          {t('extra.updateBadge.downloading', { version: started })}
         </div>
         <div style={{ marginTop: 6, color: 'var(--cth-ink-700)' }}>
-          When it lands, quit this app and install the new version over the current one. Open it and
-          pick the same project. Your agents, memory and settings stay where they are.
+          {t('extra.updateBadge.afterDownload')}
         </div>
         <ol style={{ margin: '8px 0 0', paddingLeft: 18, color: 'var(--cth-ink-700)' }}>
-          {steps.steps.map((t) => <li key={t}>{t}</li>)}
+          {steps.steps.map((step) => <li key={step}>{step}</li>)}
         </ol>
         <div style={{ display: 'flex', gap: 8, marginTop: 10, justifyContent: 'flex-end' }}>
-          <PixelButton variant="ghost" size="sm" onClick={() => setStarted(null)}>got it</PixelButton>
+          <PixelButton variant="ghost" size="sm" onClick={() => setStarted(null)}>{t('extra.updateBadge.gotIt')}</PixelButton>
         </div>
       </div>
     )}
@@ -212,10 +213,10 @@ export function UpdateBadge() {
             width: 18, height: 18, borderRadius: 999,
             background: 'var(--cth-mint-light, #d0f0e0)', color: 'var(--cth-ink-900)', fontSize: 12
           }}>&#10003;</span>
-          You are on the latest version.
+          {t('extra.updateBadge.latest')}
         </div>
         <div style={{ marginTop: 4, color: 'var(--cth-ink-700)' }}>
-          v{__APP_VERSION__} is the newest release. Checked just now.
+          {t('extra.updateBadge.newest', { version: __APP_VERSION__ })}
         </div>
       </div>
     )}

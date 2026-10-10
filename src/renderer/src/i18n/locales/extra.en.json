@@ -1,1 +1,155 @@
-{}
+{
+  "editAgent": {
+    "title": "EDIT AGENT",
+    "identity": "Identity",
+    "identityHint": "name · character · color",
+    "name": "Name",
+    "character": "Character",
+    "color": "Color",
+    "engine": "Engine",
+    "engineHint": "provider · model · next restart",
+    "provider": "Provider",
+    "model": "Model",
+    "modelCurrent": "{{model}} (current)",
+    "cliDefaultModel": "CLI default model",
+    "engineNote": "Engine changes are saved for the next restart. Use Command Center → Floor to restart a live session onto a new provider/model now.",
+    "briefing": "Briefing",
+    "briefingHint": "description · goal",
+    "description": "Description",
+    "descriptionPlaceholder": "what is this agent for",
+    "goalOptional": "Goal (optional)",
+    "goalPlaceholder": "long-running directive injected on every prompt",
+    "cancel": "cancel",
+    "save": "save changes"
+  },
+  "codeEditor": {
+    "noFile": "No file open",
+    "pickFile": "Pick a file from the tree to view it here.",
+    "copyPathTitle": "Copy absolute path",
+    "copyPath": "copy path",
+    "saveTitle": "Save (Cmd-S)",
+    "saved": "saved",
+    "err": "err",
+    "save": "save",
+    "openInIde": "Open in the IDE",
+    "loading": "loading…"
+  },
+  "updateBadge": {
+    "ariaCheck": "Version {{version}} — check for updates",
+    "clickToDownload": "Click to download v{{version}}",
+    "downloadHint": "Download the latest version and replace the app you have. Prefer the app to update itself? Settings → Updates.",
+    "onOs": "On {{os}}",
+    "installAria": "Install the update",
+    "downloading": "v{{version}} is downloading in your browser.",
+    "afterDownload": "When it lands, quit this app and install the new version over the current one. Open it and pick the same project. Your agents, memory and settings stay where they are.",
+    "gotIt": "got it",
+    "latest": "You are on the latest version.",
+    "newest": "v{{version}} is the newest release. Checked just now."
+  },
+  "quit": {
+    "closingTitle": "CLOSING TIME",
+    "quittingTitle": "QUITTING NOW?",
+    "floorSaved": "FLOOR SAVED — SEE YOU TOMORROW",
+    "stillWrapping": "STILL WRAPPING UP…",
+    "wrappingUp": "WRAPPING UP THE FLOOR",
+    "completeBody": "Every agent saved its memory and the orchestrator confirmed the shutdown. The harness closes itself in a moment.",
+    "progressBody": "The orchestrator broadcast closing time. Every worker parks its work, saves its memory, and reports back — the app closes only after the orchestrator confirms nothing will be lost.",
+    "workersConfirmed": "{{acked}} / {{total}} WORKERS CONFIRMED",
+    "workersConfirmedWaiting": "{{acked}} / {{total}} WORKERS CONFIRMED — WAITING FOR THE ORCHESTRATOR",
+    "noWorkers": "NO WORKERS ON THE FLOOR — WAITING FOR THE ORCHESTRATOR",
+    "timeoutNote": "This is taking a while (an agent may be mid-compaction or deep in a tool call). Keep waiting, or force quit and accept the data loss.",
+    "cancelBack": "cancel — back to work",
+    "killing": "killing...",
+    "forceQuit": "force quit now",
+    "agentRunningOne": "{{count}} AGENT STILL RUNNING",
+    "agentRunningMany": "{{count}} AGENTS STILL RUNNING",
+    "warnOne": "Closing the harness will terminate the running claude session and discard any unsaved progress they were holding in memory. The conversation history inside each session is lost when the PTY exits.",
+    "warnMany": "Closing the harness will terminate all {{count}} running claude sessions and discard any unsaved progress they were holding in memory. The conversation history inside each session is lost when the PTY exits.",
+    "tip": "Tip: <strong>closing time</strong> is the safe way out — the orchestrator has every agent commit its work and save its memory, and the app closes itself once the whole floor has confirmed. No data loss.",
+    "closingStartFailed": "Closing time could not start.",
+    "keepRunning": "keep them running",
+    "closingTime": "closing time",
+    "killItAll": "kill it & quit",
+    "killAll": "kill all & quit"
+  },
+  "pty": {
+    "live": "live · pty {{id}}",
+    "zoomOut": "Zoom out (Cmd -)",
+    "zoomReset": "Reset zoom (Cmd 0)",
+    "zoomIn": "Zoom in (Cmd +)",
+    "exitFocus": "Exit focus mode (Esc)"
+  },
+  "releaseDrop": {
+    "dialogLabel": "What's new in Munder Difflin {{version}}",
+    "releaseNotes": "/ release notes",
+    "closeLabel": "Close release notes",
+    "closeTitle": "Close (Esc)",
+    "frameTitle": "What's new in {{version}}",
+    "loading": "Loading"
+  },
+  "hivePicker": {
+    "title": "SELECT A HARNESS CONFIG",
+    "intro": "A <strong>harness config</strong> is the folder where the app keeps everything for one workspace — its settings, your agents and their memory, tasks, triggers, and history. Each config is separate and self-contained, so you can run different setups side by side. Open the one you were working in, switch to another, or start a new one.",
+    "current": "CURRENT",
+    "open": "open",
+    "recent": "RECENT",
+    "switchTitle": "Switch to {{path}} (reloads the app)",
+    "opening": "opening…",
+    "switch": "switch →",
+    "openingFolder": "Opening {{name}} — the app will reload…",
+    "openExisting": "open existing config…",
+    "createNew": "create new config…",
+    "openFailed": "Could not open that folder."
+  },
+  "completion": {
+    "orchestrator": "the orchestrator",
+    "completed": "{{name}} · completed",
+    "dismiss": "Dismiss"
+  },
+  "updateToast": {
+    "downloaded": "Update v{{version}} downloaded",
+    "available": "v{{version}} is available",
+    "restartHint": "Restart Munder Difflin whenever you like to apply it — nothing restarts on its own.",
+    "manualHint": "This install can’t update itself — grab the new build from the releases page.",
+    "whatsNew": "What’s new",
+    "readMore": "Read more",
+    "star": "⭐ Star us on GitHub",
+    "later": "later",
+    "restarting": "restarting…",
+    "restart": "restart to update",
+    "download": "download {{version}}",
+    "openReleases": "open releases"
+  },
+  "sidebarSplitter": {
+    "title": "Drag to resize · double-click to reset"
+  },
+  "recentText": {
+    "recent": "recent",
+    "idle": "idle",
+    "live": "live"
+  },
+  "michaelBooting": {
+    "title": "CLOCKING IN",
+    "body": "{{name}} is settling into the corner office and getting the floor ready. Hang tight…"
+  },
+  "app": {
+    "autoOn": "auto mode on",
+    "autoOff": "auto mode off",
+    "lightTheme": "Light theme",
+    "darkTheme": "Dark theme",
+    "toggleDark": "Toggle dark mode",
+    "settings": "Settings",
+    "exitFocus": "Exit focus mode (Esc)",
+    "focusMode": "Focus mode",
+    "toggleFocus": "Toggle focus mode",
+    "emptyFloor": "EMPTY FLOOR",
+    "emptyFloorBody": "No agents on the floor yet. Spawn one to see real claude output stream in here.",
+    "addAgent": "add agent",
+    "wakingFloor": "WAKING THE FLOOR",
+    "clockingIn": "{{name}} is clocking in.",
+    "terminalWillLand": "The terminal will land here once he's seated.",
+    "noAgentSelected": "NO AGENT SELECTED",
+    "spawnFromStrip": "Spawn an agent from the strip below.",
+    "terminalAndBar": "The terminal and command bar will land here."
+  }
+}
