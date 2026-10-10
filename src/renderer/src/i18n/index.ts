@@ -21,6 +21,11 @@ import { DEFAULT_GOD_NAME } from '@shared/godIdentity';
 import en from './locales/en.json';
 import zhCN from './locales/zh-CN.json';
 import ar from './locales/ar.json';
+import ko from './locales/ko.json';
+// Strings that used to be hard-coded in components. Kept in their own files so
+// they stay separate from the upstream key tree (en.json / zh-CN.json / ar.json).
+import extraEn from './locales/extra.en.json';
+import extraKo from './locales/extra.ko.json';
 
 /**
  * The languages the Settings picker offers, in display order.
@@ -33,6 +38,7 @@ import ar from './locales/ar.json';
  * the renderer takes the same path it took before Arabic existed.
  */
 export const LANGUAGES = [
+  { code: 'ko', label: '한국어', dir: 'ltr' },
   { code: 'en', label: 'English', dir: 'ltr' },
   { code: 'zh-CN', label: '简体中文', dir: 'ltr' },
   { code: 'ar', label: 'العربية', dir: 'rtl' }
@@ -94,8 +100,9 @@ function detectLanguage(): string {
   try {
     const saved = window.localStorage.getItem(STORAGE_KEY);
     if (saved && SUPPORTED.includes(saved as LanguageCode)) return saved;
-  } catch { /* localStorage unavailable — English it is */ }
-  return 'en';
+  } catch { /* localStorage unavailable — fall through to the default */ }
+  // This fork ships Korean-first. Missing keys still fall back to English.
+  return 'ko';
 }
 
 /** Switch language now and persist the choice for next launch. */
@@ -108,13 +115,14 @@ void i18n
   .use(initReactI18next)
   .init({
     resources: {
-      en: { translation: en },
+      ko: { translation: { ...ko, extra: extraKo } },
+      en: { translation: { ...en, extra: extraEn } },
       'zh-CN': { translation: zhCN },
       ar: { translation: ar }
     },
     lng: detectLanguage(),
     fallbackLng: 'en',
-    supportedLngs: ['en', 'zh-CN', 'ar'],
+    supportedLngs: ['ko', 'en', 'zh-CN', 'ar'],
     // Resources are bundled inline, so nothing ever suspends — the string is
     // there at init time. Keeping this false lets every component call
     // useTranslation() without wrapping the tree in <Suspense>.
