@@ -82,3 +82,6 @@
 6. 코드 서명 없음 → 윈도우 "알 수 없는 게시자" 경고(혼자 쓰면 무시 가능).
 7. 앱 이름 `SON AI Office`는 임시 — 바꾸려면 `electron-builder.yml`(productName/appId/shortcutName), `package.json`, `src/renderer/index.html`, ko.json의 "SON AI Office".
 8. 테스트: 전체 1,009개 중 1개(`proc-kill`) 실패 — 클라우드 샌드박스 제한. 원작 홈페이지/배포용 파일을 검사하던 테스트 일부는 제거/건너뜀.
+
+## 최종 윈도우 빌드 결과 (커밋 489f3a7, 실행 #10)
+성공: 설치·타입검사·앱빌드·설치파일 생성·"압축해제본 25초 생존"·"설치 후 실행 25초 생존" 모두 통과. 설치 파일 약 130.7MB(zip, sha256 0b7bb8af…). 받는 법은 위 "9번" 항목 참고(GitHub → Actions → 실행 #10 → Artifacts).
