@@ -51,6 +51,7 @@ import {
 } from './triggerHistory';
 import { transcribeWithGroq, DEFAULT_GROQ_MODEL } from './freeflow';
 import { registerRealtimeIpc } from './realtime';
+import { registerInstagramIpc } from './instagramReader';
 import { registerRealtimeActionIpc } from './realtimeActions';
 import { initCompletionWatcher } from './realtimeCompletionWatcher';
 import type { TaskCard, InboxMessage } from './realtimeCompletionWatcher';
@@ -61,6 +62,7 @@ import type { SpawnFailReason } from './analytics';
 import { IntegrationBroker } from './integrationBroker';
 import * as integrations from './integrations';
 import { electronApiKeyStore, registerApiKeyIpc } from './apiKeys';
+import { defaultRulesPath, registerMichaelRulesIpc } from './michaelRules';
 import { prepareApiAgentSpawn } from './apiAgent';
 import { getApiConnector } from '../shared/connectors';
 import { validateBaseUrl, buildAuthHeaders, resolveUpstreamUrl, secretRefFor, INTEGRATION_TEMPLATES } from '../shared/integrations';
@@ -3193,6 +3195,9 @@ ipcMain.handle('integrations:remove', (_evt, payload: unknown) => {
 // ─── IPC: API-connector keys (write-only; see apiKeys.ts) ─────────────────────
 // set / has / clear only — there is deliberately no channel that returns a key.
 registerApiKeyIpc(ipcMain, apiKeyStore, (id) => !!getApiConnector(id));
+// Michael's operating rules file (<workspace home>/michael-rules.md; see michaelRules.ts).
+registerMichaelRulesIpc(ipcMain, () => readConfig().harnessHome, () =>
+  defaultRulesPath({ packaged: app.isPackaged, resourcesPath: process.resourcesPath, appPath: app.getAppPath() }));
 ipcMain.handle('providerKey:set', (_evt, payload: unknown) => {
   const p = (payload ?? {}) as { backend?: unknown; key?: unknown };
   if (typeof p.backend !== 'string' || !(p.backend in BACKEND_KEY_ENV)) return { ok: false, error: 'unknown backend' };
@@ -4474,6 +4479,11 @@ ipcMain.handle('freeflow:transcribe', async (_evt, arg: unknown) => {
 // short-lived EPHEMERAL client secret; the real key never crosses IPC. All wiring
 // lives in ./realtime so this stays a single registration line.
 registerRealtimeIpc();
+
+// ─── IPC: Instagram link reading (#12) — in-app browser, read-only, user-initiated.
+// All policy (host allow-list, isolated session, no password handling) lives in
+// ./instagramReader; transcription is OFF unless the user picks an engine.
+registerInstagramIpc({ readConfig, writeConfig, getMainWindow: () => mainWindow });
 
 // ─── IPC: Realtime Michael voice ACTIONS (rt-5, Phase 2) ─────────────────────
 // Thin adapters over the SAME main fns the god PTY already uses. ALL of the safety

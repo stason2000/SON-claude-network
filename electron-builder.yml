@@ -32,6 +32,9 @@ extraResources:
   # API connector runtime (spawned as `node api-agent.cjs --connector <id>`).
   - from: resources/api-agent.cjs
     to: api-agent.cjs
+  # Michael's default operating rules (copied into the workspace on first run).
+  - from: resources/michael-rules.default.ko.md
+    to: michael-rules.default.ko.md
   # LICENSE texts travel with the app (MIT requires the notice; art assets have their own license).
   - from: LICENSE
     to: LICENSE.txt

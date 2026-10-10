@@ -20,8 +20,10 @@ import { Icon } from './Icon';
 import { OfficeThemePicker } from './OfficeThemePicker';
 import { McpDefaultsSettings } from './McpDefaultsSettings';
 import { IntegrationsRegistry } from './IntegrationsRegistry';
+import { InstagramSettings } from './InstagramSettings';
 import { AiEnginesSettings } from './AiEnginesSettings';
 import { ConnectorsSettings } from './ConnectorsSettings';
+import { DepartmentsSettings, MichaelRulesSettings } from './MichaelRulesSettings';
 import { REALTIME_MODEL } from '@shared/realtimePricing';
 import { RealtimeDevicePicker } from '@/realtime/DevicePicker';
 import { CostHud } from '@/realtime/CostHud';
@@ -1232,6 +1234,14 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
 
                       <div style={{ height: 1, background: 'var(--cth-ink-300)' }} />
 
+                      <DepartmentsSettings config={config} stage={stage} />
+
+                      <div style={{ height: 1, background: 'var(--cth-ink-300)' }} />
+
+                      <MichaelRulesSettings />
+
+                      <div style={{ height: 1, background: 'var(--cth-ink-300)' }} />
+
                       {/* Advanced */}
                       <div>
                         <div style={sectionHead}>
@@ -1433,6 +1443,8 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                   {activeSection === 'Connections' && (
                     <>
                       <McpDefaultsSettings config={config} />
+                      <div style={{ height: 1, background: 'var(--cth-ink-300)' }} />
+                      <InstagramSettings />
                       <div style={{ height: 1, background: 'var(--cth-ink-300)' }} />
                     </>
                   )}

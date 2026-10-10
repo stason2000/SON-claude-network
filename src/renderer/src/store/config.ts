@@ -61,6 +61,8 @@ export interface HarnessConfig {
    *  src/main/config.ts. */
   audience?: 'technical' | 'non-technical';
   harnessHome: string | null;
+  /** Per-department ordered connector ids (src/shared/departments.ts). Mirrors src/main/config.ts. */
+  departments?: Partial<Record<'coding' | 'research' | 'media' | 'review', string[]>>;
   /** Recently-opened hive home folders (most-recent first) for the launch picker.
    *  Mirrors src/main/config.ts. */
   recentHives?: string[];
@@ -107,6 +109,8 @@ export interface HarnessConfig {
   freeflowEnabled?: boolean;
   groqApiKey?: string;
   freeflowModel?: string;
+  /** Instagram video transcription choice (default 'off'; mirrors src/main/config.ts). */
+  instagramTranscribe?: 'off' | 'groq' | 'local';
   /** Realtime voice idle auto-disconnect (ms); default 180000 (3 min), 0 = never.
    *  Tuned in Settings → Realtime Michael; the cost cap stays the runaway guard. */
   realtimeIdleDisconnectMs?: number;

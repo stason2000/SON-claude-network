@@ -218,5 +218,84 @@
       "readOnly": "This location is read-only. Pick another folder.",
       "notFolder": "That path is a file or contains a file where a folder should be. Pick another folder."
     }
+  },
+  "rules": {
+    "title": "Michael's operating rules",
+    "desc": "The rules Michael (the boss agent) follows. Saved as michael-rules.md in your workspace folder; the content is added to Michael's first instructions whenever he starts fresh.",
+    "path": "File: {{path}}",
+    "loading": "Reading the rules file…",
+    "loadFailed": "Could not read the rules file.",
+    "createdFromDefault": "Created a new file from the default rules.",
+    "save": "Save rules",
+    "saved": "Saved.",
+    "saveFailed": "Could not save.",
+    "reset": "Reset to default",
+    "resetConfirm": "This replaces your current rules with the default rules. It cannot be undone. Continue?",
+    "resetDone": "Reset to the default rules.",
+    "unsaved": "Not saved",
+    "tooLong": "Anything past {{max}} characters is cut off when sent to Michael (the file keeps all of it).",
+    "appliesNote": "A Michael who is already running is not updated. The rules apply the next time Michael starts fresh."
+  },
+  "departments": {
+    "title": "AI per department",
+    "desc": "The AI each department uses first, and its fallback. Changes are saved with the Save button below and passed to Michael when he starts fresh.",
+    "dept": "Department",
+    "primary": "Primary",
+    "fallback": "Fallback",
+    "status": "Status",
+    "none": "None",
+    "checking": "Checking",
+    "statusOk": "Connected",
+    "statusNeeded": "Needs connecting",
+    "notConnectable": "not connectable",
+    "honestyNote": "\"Connected\" only means the program is installed or an API key is saved. Sign-in is checked on first run. Michael reports departments without a connected AI as \"needs connecting\".",
+    "name": {
+      "coding": "Coding",
+      "research": "Research",
+      "media": "Image & video",
+      "review": "Review"
+    }
+  },
+  "instagram": {
+    "detected": "Instagram link detected — read it and summarize?",
+    "reading": "Reading in the in-app browser… (a window opens briefly)",
+    "firstOnly": "(only the first of {{count}} links is read)",
+    "read": "Read",
+    "pasteCaption": "Paste caption myself",
+    "dismiss": "Dismiss",
+    "cancel": "Cancel",
+    "openLogin": "Instagram login",
+    "fallbackHint": "Paste the caption to get a summary instead",
+    "manualHint": "Copy the post's caption and paste it below. The summary uses only this text; video and audio are reported as not read.",
+    "manualPlaceholder": "Paste the caption here",
+    "sendCaption": "Summarize this caption",
+    "audioLeavesDevice": "Voice transcription (Groq) is on: audio will be sent to an external service.",
+    "status": {
+      "read": "Read",
+      "login-required": "Login required",
+      "blocked": "Blocked",
+      "not-found": "Not found",
+      "error": "Error"
+    },
+    "settings": {
+      "title": "Instagram",
+      "intro": "Paste an Instagram post/Reels link into the queue and the app opens just that one link in a separate in-app browser window, reads the caption, on-screen text and a few scenes, and Michael summarizes it. It only reads when you click [Read].",
+      "status": "Login status",
+      "loggedIn": "Logged in (in-app browser)",
+      "loggedOut": "Not logged in",
+      "refresh": "Refresh",
+      "logout": "Log out of in-app browser",
+      "passwordNote": "Log in on Instagram's own page. This app never asks for, receives or stores your password. The login stays only in the in-app browser's own storage.",
+      "transcribeTitle": "Video voice transcription (optional, off by default)",
+      "transcribeIntro": "Choose whether speech in videos is turned into text. When off, audio is reported as not read.",
+      "off": "Off (default)",
+      "offDetail": "Audio is not read. No cost; audio is never sent anywhere.",
+      "local": "(a) On this PC",
+      "localDetail": "Processed on this PC only. No cost.",
+      "groq": "(b) External API — Groq Whisper",
+      "groqDetail": "Uses the Groq key from the Voice tab. Free within Groq's free tier; beyond that Groq's pricing applies. Audio (up to 90 s) is sent to Groq's servers.",
+      "notReady": "Not ready",
+      "limits": "One link at a time, only when you click. No video files are downloaded, nothing is liked, commented or messaged, and only what your own logged-in browser shows is read. If Instagram blocks automated reading you get the reason and the paste-caption fallback."
+    }
   }
 }

@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron';
 import type { AgentProvider } from '../shared/agentProvider';
 import type { HireManifest } from '../shared/hire';
+import type { IgReadResult, InstagramStatus, InstagramTranscribeMode } from '../shared/instagram';
 export type { HireManifest } from '../shared/hire';
 import type { IntegrationRecord, IntegrationTemplate } from '../shared/integrations';
 export type { IntegrationRecord, IntegrationTemplate } from '../shared/integrations';
@@ -263,6 +264,8 @@ export interface HarnessConfig {
    *  Mirrors src/main/config.ts. */
   audience?: 'technical' | 'non-technical';
   harnessHome: string | null;
+  /** Per-department ordered connector ids (src/shared/departments.ts). Mirrors src/main/config.ts. */
+  departments?: Partial<Record<'coding' | 'research' | 'media' | 'review', string[]>>;
   /** Recently-opened hive home folders (most-recent first). Mirrors src/main/config.ts. */
   recentHives?: string[];
   registeredRepos: string[];
@@ -304,6 +307,7 @@ export interface HarnessConfig {
   freeflowEnabled?: boolean;
   groqApiKey?: string;
   freeflowModel?: string;
+  instagramTranscribe?: 'off' | 'groq' | 'local';
   /** Realtime Michael voice loop — true ONLY while a session holds the mic
    *  (renderer session sets it at start()/stop()); the main mic permission gate
    *  reads it. Default off. */
@@ -1276,6 +1280,18 @@ const api = {
   }): Promise<{ ok: boolean; text?: string; error?: string }> =>
     ipcRenderer.invoke('freeflow:transcribe', arg),
 
+  // ─── Instagram link reading (#12) ─────────────────────────────────────────────
+  /** Read ONE Instagram post/reel link in the in-app browser (user-initiated). */
+  instagramRead: (url: string): Promise<IgReadResult> => ipcRenderer.invoke('instagram:read', url),
+  /** Open the in-app browser on Instagram's login page; the user signs in there
+   *  themselves — the app never sees the password. */
+  instagramOpenLogin: (): Promise<{ ok: boolean; error?: string }> => ipcRenderer.invoke('instagram:openLogin'),
+  instagramStatus: (): Promise<InstagramStatus> => ipcRenderer.invoke('instagram:status'),
+  instagramSetTranscribe: (mode: InstagramTranscribeMode): Promise<InstagramStatus> =>
+    ipcRenderer.invoke('instagram:setTranscribe', mode),
+  /** Clear the in-app browser's Instagram cookies/storage. */
+  instagramLogout: (): Promise<{ ok: boolean; error?: string }> => ipcRenderer.invoke('instagram:logout'),
+
   // ─── Integrations registry (Phase 2 — labeled REST endpoints via the secret broker) ──
   // Bridges the §6 IPC surface for the Settings UI. WRITE-ONLY secret contract end to
   // end: `integrationsList` returns records with secretRef redacted to `hasSecret`;
@@ -1312,6 +1328,13 @@ const api = {
     ipcRenderer.invoke('connectorKey:has', id),
   connectorKeyClear: (id: string): Promise<{ ok: boolean; error?: string }> =>
     ipcRenderer.invoke('connectorKey:clear', id),
+  // Michael's operating rules (<workspace home>/michael-rules.md). No path crosses IPC.
+  michaelRulesGet: (): Promise<{ ok: true; text: string; path: string; createdFromDefault?: boolean } | { ok: false; error: string }> =>
+    ipcRenderer.invoke('michaelRules:get'),
+  michaelRulesSet: (text: string): Promise<{ ok: true; text: string; path: string } | { ok: false; error: string }> =>
+    ipcRenderer.invoke('michaelRules:set', text),
+  michaelRulesReset: (): Promise<{ ok: true; text: string; path: string } | { ok: false; error: string }> =>
+    ipcRenderer.invoke('michaelRules:reset'),
   // Realtime Michael (voice orchestrator) — MAIN mints a short-lived EPHEMERAL token
   // from the BYOK OpenAI key; the real key NEVER crosses IPC. `realtimeHasOpenAiKey`
   // is a presence boolean only (gates the voice toggle, like providerKeyHas).

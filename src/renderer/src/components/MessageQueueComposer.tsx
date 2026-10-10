@@ -10,6 +10,7 @@ import { freeflowRecorder, useFreeflow } from '@/freeflow/recorder';
 import { useTerminalFontSize } from './terminalFontSize';
 import { isComposingKey } from '@shared/imeGuard';
 import { useRtl } from '@/i18n/useDirection';
+import { InstagramLinkNotice } from './InstagramLinkNotice';
 
 const EMPTY_QUEUE: QueuedMessage[] = [];
 
@@ -141,13 +142,19 @@ export function MessageQueueComposer({ agent }: MessageQueueComposerProps) {
 
   const queueIt = () => {
     if (!canSend) return;
+    queueText(text);
+  };
+
+  // Shared by the normal send and the Instagram notice (#12), which replaces the
+  // draft text with the read result / pasted caption but keeps attachments.
+  const queueText = (msgText: string) => {
     // Prepend an "Attached files:" block using the same path-based convention as
     // the Slack inbound path (useHive.ts) so agents Read the files directly.
     const body = attachments.length
-      ? (text.trim()
-          ? `${text}\n\nAttached files:\n`
+      ? (msgText.trim()
+          ? `${msgText}\n\nAttached files:\n`
           : 'Attached files:\n') + attachments.map((a) => `- ${a.path} (${a.name})`).join('\n')
-      : text;
+      : msgText;
     enqueueMessage(agent.id, body);
     // Counted HERE, at the composer's submit, and NOT inside enqueueMessage:
     // that store action is also how work orders, Slack inbound, nudges and
@@ -348,6 +355,10 @@ export function MessageQueueComposer({ agent }: MessageQueueComposerProps) {
           ))}
         </div>
       )}
+
+      {/* Instagram post/reel link in the draft → offer to read it (#12). Only on
+          Michael (the god agent); never reads without the click. */}
+      {agent.isGod && <InstagramLinkNotice text={text} onQueue={queueText} />}
 
       {/* Composer — full-width input above a single tidy control bar (cc-ui-polish),
           with file/image attachment chips + paste-to-attach (rich-composer). */}

@@ -18,6 +18,7 @@ import { DEFAULT_CONTEXT_TRIGGER, type ContextRule } from '../../../shared/trigg
 import type { AgentProvider } from '../../../shared/agentProvider';
 import { bridgeOf, providerPreset } from '../../../shared/agentProvider';
 import { isDurableRole, preferredAgentRole, roleForHiveSpawn } from '../../../shared/agentRole';
+import { buildMichaelSeedText } from './michaelSeedText';
 import { inboxNudgeText } from '../../../shared/hiveNudge';
 import { resolveGodName } from '../../../shared/godIdentity';
 import { acquireTerminal, resetTerminal, isTerminalAutomationSafe } from '@/components/terminalPool';
@@ -465,7 +466,11 @@ export function useHive(config: HarnessConfig | null): void {
             // main process hands it back as seedPrompt — type it FIRST (identity), then
             // the orientation kick. Serialized via writeChains so they can't jam. (ondev-b)
             if (res.seedPrompt) await submitToPty(GOD_PTY, res.seedPrompt, godProvider);
-            await submitToPty(GOD_PTY, INITIAL_GOD_PROMPT, godProvider);
+            // Append the user's operating rules + the live department table + the
+            // model/effort policy (michael-rules.md; src/shared/michaelSeed.ts).
+            let rulesSeed = '';
+            try { rulesSeed = await buildMichaelSeedText(config.departments); } catch { /* orient without it */ }
+            await submitToPty(GOD_PTY, rulesSeed ? `${INITIAL_GOD_PROMPT}\n\n${rulesSeed}` : INITIAL_GOD_PROMPT, godProvider);
           }
         } catch { /* PTY may have died during startup */ }
         finally { bootGraceUntil.current[GOD_ID] = 0; }

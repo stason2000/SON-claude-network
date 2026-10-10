@@ -11,6 +11,7 @@ import {
 } from '../shared/agentProvider';
 import { defaultMcpDefaults } from '../shared/mcpCatalog';
 import { MAX_AGENT_TOKEN_CAP } from '../shared/tokenCaps';
+import { sanitizeDepartmentsConfig, type DepartmentsConfig } from '../shared/departments';
 import { expandTilde, normalizeHiveHome } from './fs';
 import type { IntegrationRecord } from '../shared/integrations';
 import {
@@ -353,6 +354,10 @@ export interface HarnessConfig {
   groqApiKey?: string;
   /** Groq Whisper model id. Default 'whisper-large-v3-turbo' (fast, multilingual). */
   freeflowModel?: string;
+  /** Instagram link reading (#12): optional speech-to-text for videos. Default
+   *  'off'; 'groq' sends audio to Groq (external), 'local' is not bundled yet.
+   *  Anything else is read as 'off' (normalizeTranscribeMode). */
+  instagramTranscribe?: 'off' | 'groq' | 'local';
 
   // ─── Realtime Michael (premium speech-to-speech voice orchestrator) ─────────
   /** True ONLY while a Realtime Michael voice session is live: the renderer
@@ -417,6 +422,11 @@ export interface HarnessConfig {
   /** Never condense a file smaller than this; also the section-trigger byte floor.
    *  DECIDED: 16 KB. */
   reflectMinBytes?: number;
+
+  // ─── Departments (src/shared/departments.ts) ───────────────────────────────
+  /** Per-department ordered connector preference (primary, fallback, …). Unset
+   *  department = the defaults from the user's rules. Sanitized on write. */
+  departments?: DepartmentsConfig;
 }
 
 const DEFAULTS: HarnessConfig = {
@@ -460,6 +470,7 @@ const DEFAULTS: HarnessConfig = {
   freeflowEnabled: true,
   groqApiKey: undefined,
   freeflowModel: 'whisper-large-v3-turbo',
+  instagramTranscribe: 'off',
   realtimeVoiceEnabled: false,
   realtimeIdleDisconnectMs: 180_000,
   webhookEnabled: false,
@@ -694,6 +705,10 @@ export function writeConfig(patch: Partial<HarnessConfig>): HarnessConfig {
     const { home, recentHives } = normalizeHiveHome(patch.harnessHome, current.recentHives ?? []);
     next.harnessHome = home;
     next.recentHives = recentHives;
+  }
+  if ('departments' in patch) {
+    const deps = sanitizeDepartmentsConfig(patch.departments);
+    if (deps) next.departments = deps; else delete next.departments;
   }
   return persistConfig(next);
 }
