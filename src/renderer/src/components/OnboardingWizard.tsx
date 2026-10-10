@@ -108,6 +108,10 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     providerPreset('claude').recommendedOrchestratorModel
   );
   const [error, setError] = useState<string | undefined>();
+  // Set when the chosen folder already holds files and the user must decide
+  // (use it as-is, or pick another) before we touch it.
+  const [homeConflict, setHomeConflict] = useState<{ looksLikeWorkspace: boolean } | null>(null);
+  const [homeAccepted, setHomeAccepted] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   // Which engine CLIs are actually on this machine. The picker used to record the
@@ -185,9 +189,12 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const pickHome = async () => {
     setError(undefined);
     const res = await window.cth.chooseFolder();
-    if (res.ok) setHome(res.path);
+    if (res.ok) { setHome(res.path); setHomeConflict(null); setHomeAccepted(null); }
     else if (res.error !== 'cancelled') setError(res.error);
   };
+
+  const homeErrorText = (code?: string, fallback?: string) =>
+    code && code !== 'other' ? t(`onboarding.homeErr.${code}`) : (fallback ?? t('onboarding.errCreateHome'));
 
   const pickRepo = async () => {
     setError(undefined);
@@ -210,9 +217,20 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       setError(t('onboarding.errEngineNotInstalled', { label: providerPreset(godProvider).label }));
       setBusy(false); setStep('orchestrator'); return;
     }
+    // Look before touching: unwritable / full folders get a plain-language reason,
+    // and a folder that already holds files is never reused without asking.
+    const inspected = await window.cth.inspectHarnessHome(harnessHome);
+    if (!inspected.ok) {
+      setError(homeErrorText(inspected.errorCode, inspected.error));
+      setBusy(false); setStep('home'); return;
+    }
+    if (inspected.nonEmpty && homeAccepted !== harnessHome) {
+      setHomeConflict({ looksLikeWorkspace: inspected.looksLikeWorkspace });
+      setBusy(false); setStep('home'); return;
+    }
     const ensure = await window.cth.ensureHarnessHome(harnessHome);
     if (!ensure.ok) {
-      setError(ensure.error ?? t('onboarding.errCreateHome'));
+      setError(homeErrorText(ensure.errorCode, ensure.error));
       setBusy(false);
       return;
     }
@@ -372,7 +390,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                 <div style={{ display: 'flex', gap: 8 }}>
                   <input
                     value={home}
-                    onChange={(e) => setHome(e.target.value)}
+                    onChange={(e) => { setHome(e.target.value); setHomeConflict(null); setHomeAccepted(null); }}
                     placeholder={t('onboarding.home.placeholder')}
                     style={inputStyle}
                   />
@@ -385,6 +403,21 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                 <div style={{ fontSize: 12, color: 'var(--cth-ink-500)' }}>
                   {plain ? t('onboarding.home.notePlain') : t('onboarding.home.note')}
                 </div>
+                {homeConflict && (
+                  <div style={{ border: '1px solid var(--cth-ink-500)', padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ lineHeight: '20px' }}>
+                      {homeConflict.looksLikeWorkspace ? t('onboarding.home.conflictWorkspace') : t('onboarding.home.conflictFiles')}
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <PixelButton variant="primary" size="md" onClick={() => { setHomeAccepted(home.trim()); setHomeConflict(null); void finish(); }}>
+                        {homeConflict.looksLikeWorkspace ? t('onboarding.home.useExisting') : t('onboarding.home.useAnyway')}
+                      </PixelButton>
+                      <PixelButton variant="secondary" size="md" onClick={pickHome}>
+                        {t('onboarding.home.pickOther')}
+                      </PixelButton>
+                    </div>
+                  </div>
+                )}
               </>
             )}
 

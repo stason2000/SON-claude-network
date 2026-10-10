@@ -1,5 +1,5 @@
 import { app } from 'electron';
-import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { accessSync, constants as fsConstants, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, statfsSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { homedir } from 'node:os';
 import {
@@ -778,7 +778,7 @@ export function modelForRole(
 /** Ensure harnessHome exists on disk. Expands `~` first — the onboarding wizard
  *  lets the user type the path, and mkdir treats a literal `~` as a plain
  *  directory name (issue #140's `ENOENT: mkdir '~/HarnessAgents'`). */
-export function ensureHarnessHome(path: string): { ok: boolean; error?: string } {
+export function ensureHarnessHome(path: string): { ok: boolean; error?: string; errorCode?: string } {
   try {
     // Expand HERE too, not only at the config write (#140). This runs FIRST —
     // onboarding calls it before updateConfig — so normalizing only at the write
@@ -791,7 +791,61 @@ export function ensureHarnessHome(path: string): { ok: boolean; error?: string }
     mkdirSync(expandTilde(path), { recursive: true });
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+    return { ok: false, error: e instanceof Error ? e.message : String(e), errorCode: homeErrorCode(e) };
+  }
+}
+
+/** Plain-language category for a failed folder operation, so the UI can show a
+ *  translated, non-technical message instead of a raw errno string. */
+function homeErrorCode(e: unknown): 'noPermission' | 'noSpace' | 'readOnly' | 'notFolder' | 'other' {
+  const code = (e as NodeJS.ErrnoException | undefined)?.code;
+  if (code === 'EACCES' || code === 'EPERM') return 'noPermission';
+  if (code === 'ENOSPC' || code === 'EDQUOT') return 'noSpace';
+  if (code === 'EROFS') return 'readOnly';
+  if (code === 'ENOTDIR' || code === 'EEXIST') return 'notFolder';
+  return 'other';
+}
+
+/** Minimum free space (bytes) we ask for before using a folder as a workspace. */
+const MIN_HOME_FREE_BYTES = 200 * 1024 * 1024;
+
+export type HomeInspection = {
+  ok: boolean;
+  /** The folder exists and already contains files. */
+  nonEmpty: boolean;
+  /** It already looks like a workspace made by this app (has roster.json or hive/). */
+  looksLikeWorkspace: boolean;
+  errorCode?: 'noPermission' | 'noSpace' | 'readOnly' | 'notFolder' | 'other';
+  error?: string;
+};
+
+/** Look at a candidate workspace folder WITHOUT creating or changing anything:
+ *  does it exist, is it empty, can we write to it, is there room. The wizard
+ *  uses this to avoid silently reusing a folder full of someone's files. */
+export function inspectHarnessHome(path: string): HomeInspection {
+  const dir = expandTilde(path);
+  try {
+    if (!existsSync(dir)) {
+      // Not created yet: check the nearest existing parent is writable and has room.
+      let parent = dirname(dir);
+      while (!existsSync(parent) && dirname(parent) !== parent) parent = dirname(parent);
+      if (!statSync(parent).isDirectory()) throw Object.assign(new Error('not a directory'), { code: 'ENOTDIR' });
+      accessSync(parent, fsConstants.W_OK);
+      const st = statfsSync(parent);
+      if (st.bavail * st.bsize < MIN_HOME_FREE_BYTES) return { ok: false, nonEmpty: false, looksLikeWorkspace: false, errorCode: 'noSpace' };
+      return { ok: true, nonEmpty: false, looksLikeWorkspace: false };
+    }
+    const entries = readdirSync(dir);
+    accessSync(dir, fsConstants.W_OK);
+    const st = statfsSync(dir);
+    if (st.bavail * st.bsize < MIN_HOME_FREE_BYTES) return { ok: false, nonEmpty: entries.length > 0, looksLikeWorkspace: false, errorCode: 'noSpace' };
+    return {
+      ok: true,
+      nonEmpty: entries.length > 0,
+      looksLikeWorkspace: entries.includes('roster.json') || entries.includes('hive'),
+    };
+  } catch (e) {
+    return { ok: false, nonEmpty: false, looksLikeWorkspace: false, errorCode: homeErrorCode(e), error: e instanceof Error ? e.message : String(e) };
   }
 }
 

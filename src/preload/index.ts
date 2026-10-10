@@ -662,8 +662,12 @@ const api = {
   /** Set or clear one per-agent token ceiling against main's latest config. */
   setAgentTokenCap: (agentId: string, tokenCap?: number): Promise<HarnessConfig> =>
     ipcRenderer.invoke('config:setAgentTokenCap', agentId, tokenCap),
-  ensureHarnessHome: (path: string): Promise<{ ok: boolean; error?: string }> =>
+  ensureHarnessHome: (path: string): Promise<{ ok: boolean; error?: string; errorCode?: string }> =>
     ipcRenderer.invoke('config:ensureHome', path),
+  /** Read-only check of a candidate workspace folder (exists? empty? writable? room?). */
+  inspectHarnessHome: (path: string): Promise<{
+    ok: boolean; nonEmpty: boolean; looksLikeWorkspace: boolean; errorCode?: string; error?: string;
+  }> => ipcRenderer.invoke('config:inspectHome', path),
   /** Change the harness home folder. 'move' copies the existing hive + palace
    *  into the new folder (old kept as a safety net); 'fresh' just re-points and
    *  bootstraps an empty home. On success the app relaunches (never resolves);
