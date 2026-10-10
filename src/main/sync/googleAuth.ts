@@ -103,33 +103,39 @@ export function startLoopback(opts: { expectedState: string; timeoutMs?: number;
       }
       const err = url.searchParams.get('error');
       const c = url.searchParams.get('code');
-      finish();
+      done = true;
+      if (timer) clearTimeout(timer);
+      // Answer first, THEN close the listener, so the browser gets the page.
+      res.on('finish', () => finish());
+      res.on('close', () => finish());
       if (err || !c) {
-        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' })
+        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', connection: 'close' })
           .end(PAGE('로그인이 취소되었습니다', '이 창을 닫고 앱으로 돌아가세요.'));
         settle.reject(new SyncError('loginDenied'));
       } else {
-        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' })
+        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', connection: 'close' })
           .end(PAGE('로그인 완료', '이 창을 닫고 SON AI Office 앱으로 돌아가세요.'));
         settle.resolve(c);
       }
     });
+    let closed = false;
     const finish = (): void => {
-      if (done) return;
       done = true;
       if (timer) clearTimeout(timer);
+      if (closed) return;
+      closed = true;
       server.close();
       // Drop keep-alive sockets so the port is released immediately.
       (server as Server & { closeAllConnections?: () => void }).closeAllConnections?.();
     };
-    server.on('error', (e) => { if (!done) { finish(); rejectStart(new SyncError('loginFailed')); } void e; });
+    server.on('error', () => { if (!closed) { finish(); rejectStart(new SyncError('loginFailed')); } });
     server.listen(0, host, () => {
       const port = (server.address() as AddressInfo).port;
       timer = setTimeout(() => { finish(); settle.reject(new SyncError('loginTimeout')); }, opts.timeoutMs ?? LOGIN_TIMEOUT_MS);
       resolveStart({
         redirectUri: `http://${host}:${port}${CALLBACK_PATH}`,
         code,
-        close: () => { if (!done) { finish(); settle.reject(new SyncError('loginDenied')); } }
+        close: () => { const was = done; finish(); if (!was) settle.reject(new SyncError('loginDenied')); }
       });
     });
   });

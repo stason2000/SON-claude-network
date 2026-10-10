@@ -286,6 +286,8 @@ export function createLocalAdapter(deps: LocalAdapterDeps): LocalAdapter {
       const all = deps.apiKeys.exportAll();
       const keys: Record<string, string> = {};
       for (const [id, v] of Object.entries(all)) if (API_KEY_ID_RE.test(id) && API_KEY_RE.test(v)) keys[id] = v;
+      // No keys here = "absent", so a fresh device simply receives them.
+      if (Object.keys(keys).length === 0) return null;
       return Buffer.from(canonicalJson({ keys }), 'utf8');
     },
     applyApiKeys(plain) {

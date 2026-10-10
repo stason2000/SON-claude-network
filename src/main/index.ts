@@ -3258,7 +3258,14 @@ ipcMain.handle('integrations:test', async (_evt, payload: unknown) => {
 });
 
 // ─── IPC: config ────────────────────────────────────────────────────────────
-ipcMain.handle('config:get', (): HarnessConfig => readConfig());
+// The Groq API key must not travel to the renderer. Config replies show a fixed mask
+// instead (truthy, so "is a key set?" checks keep working); freeflow:setConfig treats
+// the mask as "unchanged" so saving the settings form can't overwrite the real key.
+const GROQ_KEY_MASK = '••••••••••••';
+function redactConfig<T extends { groqApiKey?: string }>(c: T): T {
+  return c.groqApiKey ? { ...c, groqApiKey: GROQ_KEY_MASK } : c;
+}
+ipcMain.handle('config:get', (): HarnessConfig => redactConfig(readConfig()));
 ipcMain.handle('config:update', (_evt, patch: Partial<HarnessConfig>) => {
   // FIRST RUN: every hive-bound service is started by bootstrapHiveServices(),
   // which runs once at app-ready and early-returns on `!hive.enabled()` — i.e.
@@ -3295,10 +3302,10 @@ ipcMain.handle('config:update', (_evt, patch: Partial<HarnessConfig>) => {
     console.log('[hive] harnessHome configured — bootstrapping hive services');
     try { bootstrapHiveServices(); } catch (e) { console.error('[hive] bootstrap after onboarding:', e); }
   }
-  return next;
+  return redactConfig(next);
 });
 ipcMain.handle('config:setAgentTokenCap', (_evt, agentId: unknown, tokenCap: unknown) =>
-  setAgentTokenCap(agentId, tokenCap)
+  redactConfig(setAgentTokenCap(agentId, tokenCap))
 );
 ipcMain.handle('config:inspectHome', (_evt, path: unknown) => {
   if (typeof path !== 'string' || path.length === 0) return { ok: false, nonEmpty: false, looksLikeWorkspace: false, errorCode: 'other' };
@@ -4463,7 +4470,7 @@ ipcMain.handle('freeflow:setConfig', (_evt, patch: unknown) => {
   const next: Partial<HarnessConfig> = {};
   if (typeof p.enabled === 'boolean') next.freeflowEnabled = p.enabled;
   // Trim string fields; an emptied key clears back to undefined.
-  if (typeof p.apiKey === 'string') next.groqApiKey = p.apiKey.trim() || undefined;
+  if (typeof p.apiKey === 'string' && p.apiKey !== GROQ_KEY_MASK) next.groqApiKey = p.apiKey.trim() || undefined;
   if (typeof p.model === 'string') next.freeflowModel = p.model.trim() || DEFAULT_GROQ_MODEL;
   writeConfig(next);
   return { ok: true };
@@ -5545,7 +5552,7 @@ app.on('before-quit', (e) => {
 onConfigWritten((config) => {
   for (const w of allWindows) {
     if (w.isDestroyed() || w.webContents.isDestroyed()) continue;
-    w.webContents.send('config:changed', config);
+    w.webContents.send('config:changed', redactConfig(config));
   }
 });
 
