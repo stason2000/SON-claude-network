@@ -30,6 +30,7 @@
  */
 import catalog from './modelCatalog.json';
 import { getConnector } from './connectors';
+import type { CostTier } from './connectors';
 
 export type TaskKind =
   | 'summary' | 'rename' | 'cleanup'       // 단순
@@ -115,6 +116,72 @@ export function pickModelAndEffort(input: {
   return { difficulty, model, effort, effortVia, modelAtSpawn, reason };
 }
 
+
+// ── Cost routing: free first for light work, subscription for normal, best model for hard ──
+export function costTierOf(connectorId: string): CostTier {
+  const c = getConnector(connectorId);
+  if (!c) return 'paid';
+  return c.costTier ?? (c.kind === 'cli' ? 'subscription' : 'paid');
+}
+
+/** Order Michael tries inside one tier. Free routers first, then CLIs by strength of fit. */
+const ROUTE_ORDER: Record<CostTier, string[]> = {
+  free: ['freellmapi', 'openrouter'],
+  subscription: ['claude', 'codex', 'gemini', 'grok', 'kimi', 'qwen', 'cursor', 'copilot', 'opencode', 'crush', 'pi', 'antigravity'],
+  paid: ['openai', 'perplexity', 'higgsfield']
+};
+
+export interface RouteChoice extends ModelChoice {
+  connectorId: string;
+  tier: CostTier;
+  /** true = metered spend: Michael must ask the user first (rules §5). */
+  needsUserApproval: boolean;
+  /** One step up if this answer is rejected or the free quota (429) runs out; null at the top. */
+  escalateTo: string | null;
+  routeReason: string;
+}
+
+/**
+ * Pick WHO should do a task. Pure; `available` = connector ids the user has connected.
+ *   단순 → free tier if connected (else subscription, small model)
+ *   일반 → subscription (else free, with a note)
+ *   어려움 / 최종 검토 → subscription's biggest model, NEVER free; metered API only with approval
+ *   media / paid-only kinds → paid connector, always needs approval
+ * Returns null when nothing usable is connected.
+ */
+export function pickRoute(input: { kind: TaskKind; difficulty?: Difficulty; available: string[] }): RouteChoice | null {
+  const base = pickModelAndEffort({ kind: input.kind, difficulty: input.difficulty, connectorId: 'claude' });
+  const difficulty = base.difficulty;
+  const have = (tier: CostTier) => ROUTE_ORDER[tier].filter((id) => input.available.includes(id));
+  let tier: CostTier | null = null;
+  let note = '';
+  if (input.kind === 'media') {
+    tier = have('paid').length ? 'paid' : null;
+  } else if (difficulty === 'simple') {
+    tier = have('free').length ? 'free' : have('subscription').length ? 'subscription' : null;
+  } else if (difficulty === 'normal') {
+    tier = have('subscription').length ? 'subscription' : have('free').length ? 'free' : null;
+    if (tier === 'free') note = ' (구독 AI가 없어 무료로 대신함)';
+  } else {
+    tier = have('subscription').length ? 'subscription' : have('paid').length ? 'paid' : null;
+  }
+  if (!tier) return null;
+  const connectorId = have(tier)[0];
+  const choice = pickModelAndEffort({ kind: input.kind, difficulty, connectorId });
+  const order: CostTier[] = ['free', 'subscription', 'paid'];
+  const up = difficulty === 'hard' ? null : order.slice(order.indexOf(tier) + 1).find((t) => have(t).length) ?? null;
+  const escalateTo = up ? have(up)[0] : null;
+  const TIER_KO: Record<CostTier, string> = { free: '무료', subscription: '구독', paid: '유료(종량제)' };
+  return {
+    ...choice,
+    connectorId,
+    tier,
+    needsUserApproval: tier === 'paid',
+    escalateTo,
+    routeReason: `${DIFFICULTY_KO[difficulty]} 작업 → ${TIER_KO[tier]} 직원${note}`
+  };
+}
+
 /** The one-line hand-off log, e.g.
  *  `[배정] 코딩 → Claude Code · 모델 claude-sonnet-5-5 · 강도 중간 · 이유: 일반 구현` */
 export function formatHandoffLine(input: {
@@ -143,6 +210,14 @@ export function modelPolicySeedText(): string {
     '- 추론 강도는 앱이 강제하지 못한다. 지시문에 "추론 강도: 낮음/중간/높음"이라고 적어서 전달한다.',
     '- 일을 넘길 때마다 tasks.json 카드 설명과 board.md에 다음 형식의 한 줄을 남긴다:',
     `  ${formatHandoffLine({ department: '코딩', connectorId: 'claude', model: ex.model, effort: ex.effort, reason: '일반 구현' })}`,
-    '- 같은 일을 두 AI에게 동시에 맡기지 않는다.'
+    '- 같은 일을 두 AI에게 동시에 맡기지 않는다.',
+    '',
+    '비용 기준으로 누구에게 맡길지 고른다 (무료 → 구독 → 유료 순으로 비싸다):',
+    '- 단순한 일은 연결된 무료 AI(FreeLLMAPI, OpenRouter)에게 먼저 맡긴다. 없으면 구독 AI의 작은 모델.',
+    '- 일반 일은 구독 AI(Claude, Codex 등)의 중간 모델에게 맡긴다.',
+    '- 어려운 일과 최종 검토는 반드시 구독 AI의 가장 큰 모델과 강도 높음으로 한다. 무료 AI에게 맡기지 않는다.',
+    '- 무료 AI의 결과가 부실하거나 한도(429)에 걸리면 한 단계 위(구독 AI)에게 딱 한 번만 다시 맡긴다. 반복하지 않는다.',
+    '- 유료 API(OpenAI, Perplexity, Higgsfield)는 돈이 나가므로 쓰기 전에 사용자에게 먼저 묻는다.',
+    '- 일을 넘길 때마다 [배정] 줄에 무료/구독/유료 중 어느 쪽이었는지와 이유를 적는다.'
   ].join('\n');
 }

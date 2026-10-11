@@ -18,6 +18,8 @@ import type { AgentProvider } from '../agentProvider';
 
 export type ConnectorKind = 'cli' | 'api' | 'unavailable';
 
+export type CostTier = 'free' | 'subscription' | 'paid';
+
 /** What a connector is good at — used later for department assignment. */
 export type ConnectorStrength = 'coding' | 'research' | 'image' | 'video' | 'writing' | 'review' | 'general';
 
@@ -69,6 +71,10 @@ interface ConnectorBase {
   label: string;
   kind: ConnectorKind;
   strengths: ConnectorStrength[];
+  /** What using it costs the user: 'free' (free tiers, hard daily caps), 'subscription'
+   *  (flat monthly plan the user already pays — CLI logins), 'paid' (metered API).
+   *  Default when omitted: cli → subscription, api → paid. Drives modelPolicy.pickRoute. */
+  costTier?: CostTier;
   /** Official documentation page that was checked for this connector. */
   docsUrl?: string;
   /** true ONLY when the official docs above were actually read and confirm the

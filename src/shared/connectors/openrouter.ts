@@ -19,6 +19,7 @@ const openrouter: ApiConnector = {
   id: 'openrouter',
   label: 'OpenRouter (무료 모델)',
   kind: 'api',
+  costTier: 'free',
   needsKey: true,
   keyFormatHint: 'sk-or-…',
   keyUrl: 'https://openrouter.ai/settings/keys',

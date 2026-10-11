@@ -24,6 +24,7 @@ const freellmapi: ApiConnector = {
   id: 'freellmapi',
   label: 'FreeLLMAPI',
   kind: 'api',
+  costTier: 'free',
   needsKey: true,
   keyFormatHint: 'freellmapi-…',
   strengths: ['general', 'writing'],
