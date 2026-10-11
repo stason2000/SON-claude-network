@@ -35,13 +35,14 @@ test('registry ids are unique and every connector is well-formed', () => {
   }
 });
 
-test('every api connector has an https endpoint, a model and an auth scheme', () => {
+test('every api connector has an https endpoint (or a validated, user-editable local one), a model and an auth scheme', () => {
   const apis = conn.connectorsByKind('api');
   assert.ok(apis.length >= 2);
   for (const c of apis) {
-    assert.match(c.api.endpoint, /^https:\/\//, c.id);
+    if (c.api.editableEndpoint) assert.ok(conn.validateConnectorEndpoint(c.api.endpoint).ok, c.id);
+    else assert.match(c.api.endpoint, /^https:\/\//, c.id);
     assert.ok(c.api.model && typeof c.api.model === 'string', `${c.id} has no model`);
-    assert.ok(['openai-responses', 'higgsfield-queue'].includes(c.api.protocol), c.id);
+    assert.ok(['openai-responses', 'higgsfield-queue', 'openai-chat'].includes(c.api.protocol), c.id);
     assert.ok(['bearer', 'key'].includes(c.api.authScheme), c.id);
   }
 });

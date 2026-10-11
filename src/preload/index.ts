@@ -335,6 +335,10 @@ export interface HarnessConfig {
    *  OpenCode/Crush/pi/qwen engines; applied at spawn. API KEYS are NOT stored here —
    *  they live write-only in the secret broker. */
   providerBaseUrls?: Partial<Record<AgentProvider, string>>;
+  /** User-edited endpoints for self-hosted API connectors (editableEndpoint, e.g.
+   *  FreeLLMAPI → http://localhost:3001/v1). Non-secret; keys stay in the encrypted
+   *  connector key store. Validated by validateConnectorEndpoint on write and use. */
+  connectorEndpoints?: Record<string, string>;
   /** Per-CLI-provider default model slug, used to pre-fill the model picker. */
   providerDefaultModels?: Partial<Record<AgentProvider, string>>;
 }
@@ -1347,6 +1351,19 @@ const api = {
     ipcRenderer.invoke('connectorKey:has', id),
   connectorKeyClear: (id: string): Promise<{ ok: boolean; error?: string }> =>
     ipcRenderer.invoke('connectorKey:clear', id),
+  /** Open a separate terminal running a CLI agent's official login flow. Sends an id only. */
+  connectorLogin: (id: string): Promise<
+    | { ok: true; mode: 'command' | 'first-run'; command: string; inside?: string }
+    | { ok: false; error: 'unknown-connector' | 'no-login' | 'not-installed' | 'no-terminal' | 'spawn-failed'; docsUrl?: string }
+  > => ipcRenderer.invoke('connector:login', id),
+  /** Self-hosted API connector endpoint (non-secret). */
+  connectorEndpointGet: (id: string): Promise<{ ok: true; endpoint: string; defaultEndpoint: string } | { ok: false; error: string }> =>
+    ipcRenderer.invoke('connectorEndpoint:get', id),
+  connectorEndpointSet: (req: { id: string; endpoint: string }): Promise<{ ok: true; endpoint: string } | { ok: false; error: string }> =>
+    ipcRenderer.invoke('connectorEndpoint:set', req),
+  /** GET {endpoint}/models with the stored key. Returns status only — never the key. */
+  connectorTest: (id: string): Promise<{ ok: true; models?: number } | { ok: false; error: string; status?: number }> =>
+    ipcRenderer.invoke('connectorTest:run', id),
   // Michael's operating rules (<workspace home>/michael-rules.md). No path crosses IPC.
   michaelRulesGet: (): Promise<{ ok: true; text: string; path: string; createdFromDefault?: boolean } | { ok: false; error: string }> =>
     ipcRenderer.invoke('michaelRules:get'),

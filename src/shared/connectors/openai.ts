@@ -18,6 +18,8 @@ const openai: ApiConnector = {
   kind: 'api',
   needsKey: true,
   keyFormatHint: 'sk-…',
+  // Key page verified 2026-10-11 from developers.openai.com/api/docs/quickstart ("Create an API key" button).
+  keyUrl: 'https://platform.openai.com/api-keys',
   strengths: ['general', 'writing', 'coding', 'review'],
   docsUrl: 'https://developers.openai.com/api/docs/guides/streaming-responses',
   verified: true,

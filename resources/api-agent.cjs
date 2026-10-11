@@ -39,7 +39,7 @@ delete process.env.SON_API_KEY;
 /** Strings that must never reach the terminal: the key and, for "id:secret"
  *  keys, each half. */
 const SECRETS = [KEY, ...(KEY.includes(':') ? KEY.split(':') : [])].filter((s) => s.length >= 4);
-const KEYLIKE = /\b(sk|pplx|key|hf)[-_][A-Za-z0-9*_\-.]{4,}/gi;
+const KEYLIKE = /\b(sk|pplx|key|hf|freellmapi)[-_][A-Za-z0-9*_\-.]{4,}/gi;
 
 function redact(text) {
   let s = String(text);
@@ -112,6 +112,9 @@ async function failureMessage(res) {
 function networkMessage(e) {
   if (e && e.name === 'AbortError') return '시간 초과 / request timed out';
   const cause = e && e.cause && (e.cause.code || e.cause.message);
+  if (e && e.cause && e.cause.code === 'ECONNREFUSED') {
+    return `서버에 연결할 수 없습니다 — 프로그램이 켜져 있는지, 주소(${ORIGIN})가 맞는지 확인하세요 / connection refused (${ORIGIN})`;
+  }
   return `${(e && e.message) || String(e)}${cause ? ` (${cause})` : ''}`;
 }
 
@@ -205,6 +208,56 @@ async function askResponses(prompt) {
   }
 }
 
+// ── protocol: openai-chat (OpenAI-compatible /chat/completions, e.g. FreeLLMAPI) ──
+const chatHistory = [];
+
+async function askChat(prompt) {
+  chatHistory.push({ role: 'user', content: prompt });
+  const messages = system ? [{ role: 'system', content: system }, ...chatHistory] : chatHistory;
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), 180_000);
+  let reply = '';
+  try {
+    const res = await fetch(`${ENDPOINT.replace(/\/+$/, '')}/chat/completions`, {
+      method: 'POST',
+      headers: { Authorization: authHeader(), 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+      body: JSON.stringify({ model, messages, stream: true }),
+      redirect: 'error',
+      signal: ac.signal
+    });
+    if (!res.ok) {
+      chatHistory.pop();
+      errOut(`[${label}] ${await failureMessage(res)}`);
+      return;
+    }
+    const ctype = res.headers.get('content-type') || '';
+    if (!ctype.includes('text/event-stream')) {
+      const j = await res.json();
+      const c = j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+      reply = typeof c === 'string' ? c : '';
+      out(reply);
+    } else {
+      for await (const ev of sseEvents(res.body)) {
+        const d = ev && ev.choices && ev.choices[0] && ev.choices[0].delta;
+        if (d && typeof d.content === 'string') {
+          reply += d.content;
+          out(d.content);
+        } else if (ev && ev.error) {
+          errOut(`\n[${label}] ${(ev.error && ev.error.message) || 'stream error'}`);
+        }
+      }
+    }
+    out('\n');
+    if (reply) chatHistory.push({ role: 'assistant', content: reply });
+    else chatHistory.pop();
+  } catch (e) {
+    chatHistory.pop();
+    errOut(`[${label}] ${networkMessage(e)}`);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // ── protocol: higgsfield-queue (submit → poll) ────────────────────────────────
 const TERMINAL = new Set(['completed', 'failed', 'nsfw', 'canceled', 'cancelled']);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -265,7 +318,7 @@ async function askHiggsfield(prompt) {
 }
 
 // ── REPL ─────────────────────────────────────────────────────────────────────
-const ask = cfg.protocol === 'higgsfield-queue' ? askHiggsfield : askResponses;
+const ask = cfg.protocol === 'higgsfield-queue' ? askHiggsfield : cfg.protocol === 'openai-chat' ? askChat : askResponses;
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: !!process.stdin.isTTY });
 const PROMPT = '\x1b[1m> \x1b[0m';
 const queue = [];
@@ -285,6 +338,7 @@ async function drain() {
     }
     if (line === '/clear') {
       history.length = 0;
+      chatHistory.length = 0;
       out(`[${label}] 대화 기록을 지웠습니다 / history cleared\n`);
       continue;
     }

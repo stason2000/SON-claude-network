@@ -93,3 +93,14 @@
 - 설치 파일 링크: https://github.com/stason2000/SON-claude-network/releases/download/v0.5.11/SON-AI-Office-0.5.11-win-x64-setup.exe
 - 처음 한 번만 직접 설치하면 이후 버전은 앱이 알아서 받음. 아직 실제 업데이트(0.5.11→다음 버전)는 시험하지 못함.
 - 대기 중인 요청: 앱 아이콘 교체(사용자가 이미지를 주거나 원하는 느낌을 알려 주면 진행).
+
+## 연결 방식 표시 / CLI 로그인 / API 키 링크 / FreeLLMAPI — 코드 완료 (화면·실제 서비스는 미확인)
+- **연결 방식 배지:** 직원 추가(엔진 목록·API 연결부)와 설정 → 연결부에 모든 AI마다 `로그인 방식`(CLI) / `API 키 방식` / `연결 불가`(CapCut, 이유 표시).
+- **로그인 버튼(CLI):** 누르면 **별도 터미널 창**에서 그 AI의 공식 로그인 명령을 실행(윈도우 `cmd /k`, 맥 Terminal, 리눅스 x-terminal-emulator 등). 앱은 비밀번호·토큰을 받지도 저장하지도 않음. 설치 안 됐으면 자동 설치 없이 "공식 설치 안내 열기"만 보여 줌. 명령은 공식 문서에서 확인한 것만(`src/shared/connectors/<id>.ts`의 `login`, 출처 URL 포함):
+  - 로그인 명령: Claude `claude auth login`, Codex `codex login`, Grok `grok login`, Cursor `agent login`(없으면 `cursor-agent login`), OpenCode `opencode auth login`, Copilot `copilot login`.
+  - 따로 명령 없음(첫 실행 때 로그인): Gemini(`gemini` → Sign in with Google), Antigravity(`agy`), Crush(`crush`), Qwen(`qwen` 후 `/auth`), Kimi(`kimi` 후 `/login`), Pi(`pi` 후 `/login`).
+  - 로그인 후 이미 실행 중인 직원은 다시 시작해야 적용(Codex는 다음 시작 때 auth.json 연결).
+- **API 키 발급 페이지 버튼:** OpenAI `platform.openai.com/api-keys`, Perplexity `console.perplexity.ai/project/keys`, Higgsfield `console.higgsfield.ai`(모두 공식 문서에서 확인). 기존 https 전용 openExternal 사용.
+- **FreeLLMAPI(새 API 연결부):** 사용자가 직접 설치·실행하는 로컬 라우터(MIT). 기본 주소 `http://localhost:3001/v1`(설정에서 변경 가능, localhost/127.0.0.1 http 또는 https만 허용, 주소는 설정 파일 `connectorEndpoints`, 키는 기존 암호화 키 저장소). 새 프로토콜 `openai-chat`(`/chat/completions` 스트리밍; `/v1/responses`는 스트림 이벤트가 문서에 없어 사용 안 함). 설정 카드에 설치 순서·주의 사항(무료 등급만, 최고급 모델 없음, 속도 들쭉날쭉, "개인 실험용", 각 업체 약관 적용, 프리미엄 연 $19 선택) + **연결 테스트**(`GET /models`, 키는 기록·표시 안 함). 앱은 FreeLLMAPI를 묶거나 내려받거나 실행하지 않음.
+- **FreeLLMAPI 캐릭터:** `ai-freellmapi`(연두색 "쌓인 층" 모양, 사람 아님). 캐릭터를 고르면 엔진이 Custom + `son-api freellmapi`로 바뀌고, 반대로 그 명령이면 그림도 따라감. 직원 편집에서 API 직원의 명령이 Claude로 바뀌던 문제도 같이 고침.
+- **시험:** `test/connectors-login-freellmapi.test.cjs` 추가(가짜 서버·가짜 터미널). 전체 1,030개 중 `proc-kill` 1개만 실패(샌드박스 제한). **실제 로그인 창(윈도우)·실제 FreeLLMAPI·화면 모습은 확인하지 못함** — 사용자 PC에서 확인 필요.

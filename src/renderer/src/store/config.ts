@@ -133,6 +133,10 @@ export interface HarnessConfig {
    *  OpenCode/Crush/pi/qwen engines; applied at spawn. API KEYS are NOT stored here —
    *  they live write-only in the secret broker. */
   providerBaseUrls?: Partial<Record<AgentProvider, string>>;
+  /** User-edited endpoints for self-hosted API connectors (editableEndpoint, e.g.
+   *  FreeLLMAPI → http://localhost:3001/v1). Non-secret; keys stay in the encrypted
+   *  connector key store. Validated by validateConnectorEndpoint on write and use. */
+  connectorEndpoints?: Record<string, string>;
   /** Per-CLI-provider default model slug, used to pre-fill the model picker. */
   providerDefaultModels?: Partial<Record<AgentProvider, string>>;
   /** Legacy single-webhook fields (mirrors src/main/config.ts, where they are

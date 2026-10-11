@@ -20,6 +20,8 @@ const perplexity: ApiConnector = {
   kind: 'api',
   needsKey: true,
   keyFormatHint: 'pplx-…',
+  // Key page verified 2026-10-11 from docs.perplexity.ai/docs/getting-started/quickstart ("Get your Perplexity API Key" card).
+  keyUrl: 'https://console.perplexity.ai/project/keys',
   strengths: ['research', 'writing'],
   docsUrl: 'https://docs.perplexity.ai/docs/agent-api/quickstart',
   verified: true,

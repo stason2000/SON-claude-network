@@ -20,6 +20,8 @@ const higgsfield: ApiConnector = {
   kind: 'api',
   needsKey: true,
   keyFormatHint: 'KEY_ID:KEY_SECRET',
+  // Key page verified 2026-10-11 from docs.higgsfield.ai ("Get API key" link; authentication page: credentials are created in Higgsfield Console).
+  keyUrl: 'https://console.higgsfield.ai',
   strengths: ['image', 'video'],
   docsUrl: 'https://docs.higgsfield.ai/docs/quickstart',
   verified: true,

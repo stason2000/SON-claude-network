@@ -204,7 +204,83 @@
     "docs": "Docs",
     "hireHint": "Hire: Add Agent → Custom → command \"{{command}}\"",
     "addAgentApi": "API connectors",
-    "addAgentApiHint": "Pick one to run an API connector as a worker (save its key in Settings → Connectors first)."
+    "addAgentApiHint": "Pick one to run an API connector as a worker (save its key in Settings → Connectors first).",
+    "method": {
+      "login": "Log-in",
+      "apiKey": "API key",
+      "unavailable": "Not connectable"
+    },
+    "methodHint": {
+      "login": "You sign in inside that AI's own CLI. This app never receives or stores passwords or tokens.",
+      "apiKey": "Paste an API key issued by the service. It is encrypted on this computer and never shown again.",
+      "unavailable": "No official automatic connection exists, so it is not connected."
+    },
+    "login": {
+      "button": "Log in",
+      "opening": "Opening the login window…",
+      "openedCommand": "Ran \"{{command}}\" in a new terminal window. Sign in when your browser opens, then close that window. An agent of this AI that is already running must be restarted to pick up the login.",
+      "openedFirstRun": "This AI has no separate login command; it asks you to sign in on first run. Ran \"{{command}}\" in a new terminal window — follow its prompts, then close the window. Restart any agent of this AI that is already running.",
+      "openedFirstRunInside": "This AI has no separate login command. Ran \"{{command}}\" in a new terminal window — type {{inside}} there, sign in, then close the window. Restart any agent of this AI that is already running.",
+      "notInstalled": "{{label}} is not installed on this computer. The app does not install anything automatically. Install it from the official instructions, then try again.",
+      "noLogin": "The login steps for this AI could not be verified from its official docs. Open the docs and follow them.",
+      "noTerminal": "Could not open a new terminal window (no terminal program found). Open the official docs and follow them.",
+      "failed": "Could not open the login window. Open the official docs and follow them.",
+      "installDocs": "Open official install instructions",
+      "openDocs": "Open official docs",
+      "source": "Login steps source (official docs)"
+    },
+    "keyUrl": "Open the API key page",
+    "keyUrlDocs": "Open API key instructions (official docs)",
+    "endpoint": {
+      "label": "Server address",
+      "save": "Save address",
+      "reset": "Default",
+      "saved": "Address saved.",
+      "hint": "Default is {{default}}. Only this computer (localhost, 127.0.0.1) or https addresses are allowed.",
+      "err": {
+        "empty": "Enter an address.",
+        "too-long": "The address is too long.",
+        "invalid": "That is not a valid address.",
+        "scheme": "Only http or https addresses are allowed.",
+        "http-remote": "Other computers need https (plain http only for localhost / 127.0.0.1).",
+        "credentials": "The address cannot contain a user name or password.",
+        "query": "Remove the ? or # part from the address.",
+        "not-editable": "This connector's address cannot be changed."
+      }
+    },
+    "test": {
+      "button": "Test connection",
+      "running": "Checking…",
+      "ok": "Connected — the server answered.",
+      "okModels": "Connected — {{count}} models found.",
+      "err": {
+        "auth": "The server is up but the key was rejected (HTTP {{status}}). Paste the unified key again.",
+        "refused": "Cannot reach the server. Check that FreeLLMAPI is running and the address is right.",
+        "timeout": "No answer (timed out). Check the server and the address.",
+        "http": "The server answered with an error (HTTP {{status}}).",
+        "network": "Could not connect (network error). Check the address.",
+        "no-test": "This connector has no connection test.",
+        "unknown-connector": "Unknown connector."
+      }
+    },
+    "freellmapi": {
+      "setupTitle": "Setup (you install and run it yourself)",
+      "step1": "Windows: download the FreeLLMAPI installer (.exe) from GitHub Releases and install it. (Docker also works.)",
+      "step2": "Start FreeLLMAPI and open the dashboard at http://localhost:3001 in your browser. (Desktop app: tray icon → Open Dashboard)",
+      "step3": "On the Keys page, add keys for the free providers you want. Get each key from that provider's own site.",
+      "step4": "Copy the unified key starting with \"freellmapi-\" from the top of the Keys page (desktop app: the tray popover).",
+      "step5": "Paste the unified key below, save it, and press \"Test connection\". Then pick the FreeLLMAPI character in Add Agent.",
+      "releases": "Open the installer page (GitHub Releases)",
+      "warningTitle": "Please note",
+      "warn1": "It only stacks free tiers, so there are no frontier models.",
+      "warn2": "Latency varies, and quality can drop late in the day as top models hit their caps (resets at UTC midnight).",
+      "warn3": "The project itself says it is \"for personal experimentation and learning, not production\".",
+      "warn4": "Each provider's terms of service still apply, and complying with them is your responsibility.",
+      "warn5": "The paid Premium live catalog ($19/yr) is optional; it works without it.",
+      "warn6": "This app does not install, download or run FreeLLMAPI. You install it and keep it running."
+    },
+    "addAgentMethods": "Connection type",
+    "addAgentUnavailable": "{{label}}: not connectable — {{reason}}"
   },
   "homeSetup": {
     "conflictWorkspace": "This folder already contains a workspace. Nothing will be overwritten or deleted.",

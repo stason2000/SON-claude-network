@@ -13,6 +13,7 @@ import { defaultMcpDefaults } from '../shared/mcpCatalog';
 import { MAX_AGENT_TOKEN_CAP } from '../shared/tokenCaps';
 import { sanitizeDepartmentsConfig, type DepartmentsConfig } from '../shared/departments';
 import { expandTilde, normalizeHiveHome } from './fs';
+import { sanitizeConnectorEndpoints } from '../shared/connectors';
 import type { IntegrationRecord } from '../shared/integrations';
 import {
   DEFAULT_CONTEXT_TRIGGER,
@@ -324,6 +325,10 @@ export interface HarnessConfig {
    *  upstream). API KEYS are NOT stored here — they live write-only in the secret
    *  broker (integrations.ts), read MAIN-ONLY at spawn. */
   providerBaseUrls?: Partial<Record<AgentProvider, string>>;
+  /** User-edited endpoints for self-hosted API connectors (editableEndpoint, e.g.
+   *  FreeLLMAPI → http://localhost:3001/v1). Non-secret; keys stay in the encrypted
+   *  connector key store. Validated by validateConnectorEndpoint on write and use. */
+  connectorEndpoints?: Record<string, string>;
   /** Per-CLI-provider default model slug, used to pre-fill the model picker. */
   providerDefaultModels?: Partial<Record<AgentProvider, string>>;
   /** Master toggle for the Slack → Michael's-queue integration. */
@@ -690,6 +695,9 @@ function persistConfig(next: HarnessConfig): HarnessConfig {
 export function writeConfig(patch: Partial<HarnessConfig>): HarnessConfig {
   const current = readConfig();
   const next: HarnessConfig = { ...current, ...patch };
+  // Self-hosted connector endpoints receive an API key, so only validated
+  // http://localhost or https URLs for editable connectors are persisted.
+  if (patch && 'connectorEndpoints' in patch) next.connectorEndpoints = sanitizeConnectorEndpoints(patch.connectorEndpoints);
   // Project INGESTION — a registered repo is typed by hand ("~/dev/foo") as often
   // as it is picked from the folder dialog. Expand `~` here so the persisted list
   // (and therefore every agent's default cwd) is ABSOLUTE; Node's fs/spawn treat

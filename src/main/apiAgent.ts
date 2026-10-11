@@ -13,7 +13,7 @@
  * (visible in process listings), not logged, and not returned to the renderer.
  * Electron-free apart from the injected paths, so it is unit-testable.
  */
-import { parseApiAgentCommand, type ApiConnector } from '../shared/connectors';
+import { effectiveEndpoint, parseApiAgentCommand, type ApiConnector } from '../shared/connectors';
 
 export interface ApiAgentSpawn {
   command: string;
@@ -25,13 +25,21 @@ export interface ApiAgentSpawn {
 export function prepareApiAgentSpawn(
   command: string,
   args: readonly string[] | undefined,
-  deps: { execPath: string; scriptPath: string; getKey: (connectorId: string) => string | undefined }
+  deps: {
+    execPath: string;
+    scriptPath: string;
+    getKey: (connectorId: string) => string | undefined;
+    /** The user's saved endpoint override (HarnessConfig.connectorEndpoints). Only
+     *  honored for connectors with `editableEndpoint`, and only when it validates. */
+    getEndpoint?: (connectorId: string) => string | undefined;
+  }
 ): null | { error: string } | ApiAgentSpawn {
   const parsed = parseApiAgentCommand(command, args ?? []);
   if (!parsed || 'error' in parsed) return parsed;
   const { connector, model } = parsed;
   const key = deps.getKey(connector.id);
-  const config = { id: connector.id, label: connector.label, ...connector.api };
+  const endpoint = effectiveEndpoint(connector, deps.getEndpoint?.(connector.id));
+  const config = { id: connector.id, label: connector.label, ...connector.api, endpoint };
   const env: Record<string, string> = {
     ELECTRON_RUN_AS_NODE: '1',
     SON_API_CONNECTOR: JSON.stringify(config),

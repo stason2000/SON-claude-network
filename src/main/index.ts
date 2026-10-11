@@ -66,7 +66,11 @@ import { electronApiKeyStore, registerApiKeyIpc } from './apiKeys';
 import { defaultRulesPath, registerMichaelRulesIpc } from './michaelRules';
 import { initSync } from './sync';
 import { prepareApiAgentSpawn } from './apiAgent';
-import { getApiConnector } from '../shared/connectors';
+import { getApiConnector, sanitizeConnectorEndpoints, validateConnectorEndpoint } from '../shared/connectors';
+import { launchCliLogin } from './cliLogin';
+import { testApiConnector } from './connectorTest';
+import { buildPtyEnv } from './ptyEnv';
+import { userShellPath } from './shellEnv';
 import { validateBaseUrl, buildAuthHeaders, resolveUpstreamUrl, secretRefFor, INTEGRATION_TEMPLATES } from '../shared/integrations';
 import { RosterStore } from './roster';
 import { buildWorkerLaunch } from './workerLaunch';
@@ -2679,7 +2683,8 @@ async function spawnAgentCore(opts: AgentSpawnOptions, owner: Electron.WebConten
     const apiSpawn = prepareApiAgentSpawn(opts.command, opts.args, {
       execPath: process.execPath,
       scriptPath: apiAgentScriptPath(),
-      getKey: (id) => apiKeyStore.getKeyForSpawn(id)
+      getKey: (id) => apiKeyStore.getKeyForSpawn(id),
+      getEndpoint: (id) => readConfig().connectorEndpoints?.[id]
     });
     if (apiSpawn && 'error' in apiSpawn) {
       analytics.track('agent_spawn_failed', { provider, reason: 'spawn_error' });
@@ -3202,6 +3207,63 @@ ipcMain.handle('integrations:remove', (_evt, payload: unknown) => {
 // ─── IPC: API-connector keys (write-only; see apiKeys.ts) ─────────────────────
 // set / has / clear only — there is deliberately no channel that returns a key.
 registerApiKeyIpc(ipcMain, apiKeyStore, (id) => !!getApiConnector(id));
+// ─── IPC: CLI login (opens the CLI's OWN sign-in flow in a separate terminal) ──
+// The renderer sends a connector id only; binaries/args are registry constants
+// (src/shared/connectors/<id>.ts `login`). The app never sees the credentials.
+ipcMain.handle('connector:login', (_evt, id: unknown) =>
+  launchCliLogin(id, {
+    platform: process.platform,
+    resolve: (bin) => {
+      try {
+        const r = resolveCliCommand(bin);
+        return r !== bin && existsSync(r) ? r : null;
+      } catch { return null; }
+    },
+    start: (launch) => new Promise<boolean>((resolve) => {
+      try {
+        const child = spawn(launch.command, launch.args, {
+          detached: true,
+          stdio: 'ignore',
+          windowsHide: false,
+          windowsVerbatimArguments: launch.windowsVerbatimArguments === true,
+          env: buildPtyEnv(process.env, userShellPath())
+        });
+        child.once('error', () => resolve(false));
+        child.once('spawn', () => { child.unref(); resolve(true); });
+      } catch { resolve(false); }
+    })
+  }));
+// ─── IPC: self-hosted API connector endpoint (non-secret; e.g. FreeLLMAPI) ────
+ipcMain.handle('connectorEndpoint:get', (_evt, id: unknown) => {
+  const c = getApiConnector(id);
+  if (!c || !c.api.editableEndpoint) return { ok: false, error: 'not-editable' };
+  const saved = readConfig().connectorEndpoints?.[c.id];
+  const v = saved ? validateConnectorEndpoint(saved) : null;
+  return { ok: true, endpoint: v && v.ok ? v.url : c.api.endpoint, defaultEndpoint: c.api.endpoint };
+});
+ipcMain.handle('connectorEndpoint:set', (_evt, payload: unknown) => {
+  const p = (payload ?? {}) as { id?: unknown; endpoint?: unknown };
+  const c = getApiConnector(p.id);
+  if (!c || !c.api.editableEndpoint) return { ok: false, error: 'not-editable' };
+  const current = { ...(readConfig().connectorEndpoints ?? {}) };
+  if (p.endpoint === '' || p.endpoint === null || p.endpoint === undefined) {
+    delete current[c.id];
+    writeConfig({ connectorEndpoints: sanitizeConnectorEndpoints(current) });
+    return { ok: true, endpoint: c.api.endpoint };
+  }
+  const v = validateConnectorEndpoint(p.endpoint);
+  if (!v.ok) return { ok: false, error: v.error };
+  current[c.id] = v.url;
+  writeConfig({ connectorEndpoints: sanitizeConnectorEndpoints(current) });
+  return { ok: true, endpoint: v.url };
+});
+// ─── IPC: connection test (GET {endpoint}/models; status only, key never returned) ──
+ipcMain.handle('connectorTest:run', (_evt, id: unknown) =>
+  testApiConnector(id, {
+    getKey: (cid) => apiKeyStore.getKeyForSpawn(cid),
+    getEndpoint: (cid) => readConfig().connectorEndpoints?.[cid],
+    fetch: globalThis.fetch
+  }));
 // Michael's operating rules file (<workspace home>/michael-rules.md; see michaelRules.ts).
 registerMichaelRulesIpc(ipcMain, () => readConfig().harnessHome, () =>
   defaultRulesPath({ packaged: app.isPackaged, resourcesPath: process.resourcesPath, appPath: app.getAppPath() }));

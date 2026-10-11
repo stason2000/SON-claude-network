@@ -6,7 +6,9 @@ import { SpritePortrait } from './SpritePortrait';
 import { ProviderLogo } from './ProviderLogo';
 import { useStore, type Agent } from '@/store/store';
 import { OFFICE_CAST, type OfficeCharacterName } from '@/scene/office/cast';
-import { mascotForProvider, providerForMascot } from '@/scene/office/aiMascotArt';
+import { apiConnectorForMascot, mascotForAgent, providerForMascot } from '@/scene/office/aiMascotArt';
+import { apiAgentCommand, apiConnectorIdForCommand, cliConnectorForProvider } from '@shared/connectors';
+import { MethodBadge } from './ConnectorBits';
 import { type AccentColorName } from '@/design/tokens';
 import {
   type AgentProvider,
@@ -43,6 +45,8 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
     inferAgentProvider(agent.command, agent.provider)
   );
   const [model, setModel] = useState<string | undefined>(agent.model);
+  /** The API connector this agent runs (`son-api <id>`), if any — e.g. FreeLLMAPI. */
+  const [apiId, setApiId] = useState<string | undefined>(apiConnectorIdForCommand(agent.command));
   const [description, setDescription] = useState(agent.description);
   const [goal, setGoal] = useState(agent.goal ?? '');
 
@@ -56,15 +60,19 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
     setAccent(agent.accent);
     const inferred = inferAgentProvider(agent.command, agent.provider);
     setProvider(inferred);
-    setCharacter(mascotForProvider(inferred));
+    setApiId(apiConnectorIdForCommand(agent.command));
+    setCharacter(mascotForAgent(inferred, agent.command));
     setModel(agent.model);
     setDescription(agent.description);
     setGoal(agent.goal ?? '');
   }, [agent.id]);
 
-  const pickProvider = (id: AgentProvider) => {
+  const pickProvider = (id: AgentProvider, nextApi?: string) => {
+    // An API connector only runs under the 'custom' engine; any other engine drops it.
+    const api = id === 'custom' ? (nextApi ?? apiId) : undefined;
     setProvider(id);
-    setCharacter(mascotForProvider(id));   // the picture always follows the AI
+    setApiId(api);
+    setCharacter(mascotForAgent(id, api ? apiAgentCommand(api) : undefined));   // the picture always follows the AI
     if (!config) {
       setModel(undefined);
       return;
@@ -79,9 +87,16 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
     const trimmedName = name.trim() || agent.name;
     const trimmedDescription = description.trim() || 'a fresh harness';
     const trimmedGoal = goal.trim();
-    const command = config
-      ? buildSpawnCommand(config, model, provider)
-      : agent.command;
+    const originalApi = apiConnectorIdForCommand(agent.command);
+    const originalProvider = inferAgentProvider(agent.command, agent.provider);
+    const command = provider === 'custom' && apiId
+      // API agent: keep its own `son-api <id> [--model …]` command when the connector is unchanged.
+      ? (originalApi === apiId ? agent.command : apiAgentCommand(apiId))
+      : provider === 'custom' && originalProvider === 'custom' && !originalApi
+        ? agent.command   // a hand-typed custom CLI keeps its command
+        : config
+          ? buildSpawnCommand(config, model, provider)
+          : agent.command;
 
     updateAgent(agent.id, {
       name: trimmedName,
@@ -146,6 +161,9 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
                         onClick={() => {
                           setCharacter(c.name);
                           setName(c.displayName);
+                          const api = apiConnectorForMascot(c.name);
+                          if (api) { pickProvider('custom', api); return; }
+                          if (c.name === 'ai-custom') { setApiId(undefined); if (provider !== 'custom') pickProvider('custom'); return; }
                           const id = providerForMascot(c.name);
                           if (id && id !== provider) pickProvider(id as AgentProvider);
                         }}
@@ -220,6 +238,10 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
                       >
                         <ProviderLogo provider={p.id} size={14} />
                         {p.label}
+                        {(() => {
+                          const cc = cliConnectorForProvider(p.id);
+                          return cc ? <MethodBadge connector={cc} style={{ fontSize: 10, lineHeight: '14px', padding: '0 4px' }} /> : null;
+                        })()}
                       </button>
                     );
                   })}

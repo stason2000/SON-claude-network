@@ -12,6 +12,7 @@
 // [stand, stepL, stepR, type1, type2, read1, read2, blocked] for front and back.
 
 import { BRAND_LOGOS, type BrandLogo } from './brandLogos';
+import { apiConnectorIdForCommand, getApiConnector } from '@shared/connectors';
 
 type RGB = [number, number, number];
 type Buf = Uint8ClampedArray;
@@ -25,7 +26,7 @@ const FOOT: RGB = [48, 44, 60];
 
 export type MascotName =
   | 'ai-claude' | 'ai-codex' | 'ai-gemini' | 'ai-grok' | 'ai-kimi' | 'ai-antigravity'
-  | 'ai-qwen' | 'ai-opencode' | 'ai-crush' | 'ai-pi' | 'ai-copilot' | 'ai-cursor' | 'ai-custom';
+  | 'ai-qwen' | 'ai-opencode' | 'ai-crush' | 'ai-pi' | 'ai-copilot' | 'ai-cursor' | 'ai-freellmapi' | 'ai-custom';
 
 interface Mascot {
   label: string;
@@ -293,6 +294,29 @@ export const MASCOTS: Record<MascotName, Mascot> = {
     ]),
     eye: { x: 4, y: 4, gap: 4 },
   },
+  // FreeLLMAPI (API connector, runs as `son-api freellmapi`): a lime "stack" —
+  // rounded block with two lighter layer bands = many free tiers stacked into one.
+  // Original emblem, not the project's logo.
+  'ai-freellmapi': {
+    label: 'FreeLLMAPI', blurb: '무료 등급을 쌓아 쓰는 라우터 (내 PC에서 직접 실행)', base: [118, 186, 64],
+    mask: M([
+      '...########...',
+      '.############.',
+      '##############',
+      '##############',
+      '##############',
+      '##############',
+      'llllllllllllll',
+      '##############',
+      '.llllllllllll.',
+      '..dddddddddd..',
+      '..............',
+      '..............',
+      '..............',
+      '..............',
+    ]),
+    eye: { x: 4, y: 2, gap: 4 },
+  },
   // Plain terminal-ish block for custom CLIs.
   'ai-custom': {
     label: 'Custom', blurb: 'Plain grey block', base: [130, 140, 150],
@@ -328,9 +352,31 @@ export function mascotForProvider(provider: string | undefined | null): MascotNa
   return isMascotName(key) ? key : 'ai-custom';
 }
 
-/** The provider id behind a mascot ('ai-codex' → 'codex'); undefined for non-mascot names. */
+/** The API connector a mascot stands for ('ai-freellmapi' → 'freellmapi'), if any.
+ *  Such agents run as provider 'custom' with the `son-api <id>` command. */
+export function apiConnectorForMascot(name: string): string | undefined {
+  if (!isMascotName(name)) return undefined;
+  const id = name.slice(3);
+  return getApiConnector(id) ? id : undefined;
+}
+
+/** The provider id behind a mascot ('ai-codex' → 'codex'); 'custom' for an API
+ *  connector mascot (see apiConnectorForMascot); undefined for non-mascot names. */
 export function providerForMascot(name: string): string | undefined {
-  return isMascotName(name) ? name.slice(3) : undefined;
+  if (!isMascotName(name)) return undefined;
+  return apiConnectorForMascot(name) ? 'custom' : name.slice(3);
+}
+
+/** The mascot for an agent from BOTH its engine and its command: a `son-api <id>`
+ *  agent whose connector has its own mascot (FreeLLMAPI) gets that one; anything
+ *  else follows the provider (mascotForProvider). */
+export function mascotForAgent(provider: string | undefined | null, command: string | undefined | null): MascotName {
+  const api = apiConnectorIdForCommand(command ?? undefined);
+  if (api) {
+    const key = `ai-${api}`;
+    if (isMascotName(key)) return key;
+  }
+  return mascotForProvider(provider);
 }
 
 // ─── drawing primitives ──────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import { connectorsByKind, apiAgentCommand } from '@shared/connectors';
+import { connectorsByKind, apiAgentCommand, apiConnectorIdForCommand, cliConnectorForProvider } from '@shared/connectors';
+import { CliLoginButton, MethodBadge } from './ConnectorBits';
 import { PixelPanel } from './PixelPanel';
 import { PixelButton } from './PixelButton';
 import { SpritePortrait } from './SpritePortrait';
@@ -8,7 +9,7 @@ import { Icon } from './Icon';
 import { ProviderLogo } from './ProviderLogo';
 import { useStore, type Agent } from '@/store/store';
 import { OFFICE_CAST, DEFAULT_CHARACTER, type OfficeCharacterName } from '@/scene/office/cast';
-import { mascotForProvider, providerForMascot } from '@/scene/office/aiMascotArt';
+import { apiConnectorForMascot, mascotForAgent, providerForMascot } from '@/scene/office/aiMascotArt';
 import { type AccentColorName } from '@/design/tokens';
 import type { HireManifest } from '@shared/hire';
 import { hireQueueProgress } from '@shared/hireQueue';
@@ -145,7 +146,7 @@ export interface AddAgentModalProps {
 }
 
 export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModalProps) {
-  const { t: tr } = useTranslation();
+  const { t: tr, i18n } = useTranslation();
   const rtl = useRtl();
   const addAgent = useStore(s => s.addAgent);
   // Deep links and file batches share one FIFO. The head alone seeds the form;
@@ -201,11 +202,13 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
   const [model, setModel] = useState<string | undefined>(
     pendingHire ? pendingHire.model : initialModel
   );
-  // The agent's picture is its AI's logo: follow the provider whenever it changes.
-  useEffect(() => { setCharacter(mascotForProvider(provider)); }, [provider]);
   const [command, setCommand] = useState(
     pendingHire ? hireCommand(pendingHire) : buildSpawnCommand(config, initialModel, initialProvider)
   );
+  // The agent's picture is its AI's logo: follow the engine whenever it changes —
+  // including an API connector picked by command (`son-api freellmapi` → its mascot).
+  const apiInCommand = apiConnectorIdForCommand(command);
+  useEffect(() => { setCharacter(mascotForAgent(provider, command)); }, [provider, apiInCommand]);
   const [description, setDescription] = useState(pendingHire?.description ?? 'a fresh harness');
   const [hireMeta, setHireMeta] = useState<HireManifest | null>(pendingHire);
 
@@ -696,6 +699,14 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                               // The pictures ARE the AIs: picking one also picks the engine that runs.
                               setCharacter(c.name);
                               setName(c.displayName);
+                              const api = apiConnectorForMascot(c.name);
+                              if (api) {
+                                // An API-connector mascot (FreeLLMAPI) runs as `son-api <id>`.
+                                if (provider !== 'custom') pickProvider('custom');
+                                setCommand(apiAgentCommand(api));
+                                return;
+                              }
+                              if (c.name === 'ai-custom' && apiInCommand) setCommand(config.defaultCommand || '');
                               const id = providerForMascot(c.name);
                               if (id && id !== provider) pickProvider(id as AgentProvider);
                             }}
@@ -913,11 +924,42 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                             >
                               <ProviderLogo provider={p.id} size={14} />
                               {p.label}
+                              {(() => {
+                                const cc = cliConnectorForProvider(p.id);
+                                return cc ? <MethodBadge connector={cc} style={{ fontSize: 10, lineHeight: '14px', padding: '0 4px' }} /> : null;
+                              })()}
                             </button>
                           );
                         })}
                       </div>
                     </Row>
+
+                    {connectorsByKind('unavailable').map((c) => (
+                      <span key={c.id} style={{ fontSize: 12, color: 'var(--cth-ink-700)', lineHeight: '16px' }}>
+                        <MethodBadge connector={c} /> {tr('extra.connectors.addAgentUnavailable', {
+                          label: c.label,
+                          reason: (i18n.language || '').startsWith('ko') ? c.reason.ko : c.reason.en
+                        })}
+                      </span>
+                    ))}
+
+                    {(() => {
+                      // "로그인 방식" engines: sign in inside the CLI's own login flow.
+                      const cc = cliConnectorForProvider(provider);
+                      return cc && cc.kind === 'cli' ? (
+                        // A div, not <Row> (a <label>): clicking the hint text must not press "로그인".
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          <span style={{
+                            fontFamily: 'var(--cth-font-display)', fontSize: 8, lineHeight: '12px',
+                            color: 'var(--cth-ink-700)', textTransform: 'uppercase'
+                          }}>{tr('extra.connectors.addAgentMethods')}</span>
+                          <span style={{ fontSize: 12, color: 'var(--cth-ink-700)', lineHeight: '16px' }}>
+                            <MethodBadge connector={cc} /> {tr('extra.connectors.methodHint.login')}
+                          </span>
+                          <CliLoginButton key={cc.id} connector={cc} />
+                        </div>
+                      ) : null;
+                    })()}
 
                     {preset.supportsModel && <Row label={tr('addAgent.model')}>
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -1050,9 +1092,10 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                                   padding: '3px 8px 1px', border: 'none', cursor: 'pointer',
                                   fontFamily: 'var(--cth-font-ui)', fontSize: 12, color: 'var(--cth-ink-900)',
                                   background: command.trim() === apiAgentCommand(c.id) ? 'var(--cth-sky-light)' : 'var(--cth-cream-100)',
-                                  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)'
+                                  boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+                                  display: 'inline-flex', alignItems: 'center', gap: 6
                                 }}
-                              >{c.label}</button>
+                              >{c.label}<MethodBadge connector={c} style={{ fontSize: 10, lineHeight: '14px', padding: '0 4px' }} /></button>
                             ))}
                           </div>
                           <span style={{ fontSize: 12, color: 'var(--cth-ink-500)', lineHeight: '16px' }}>

@@ -17,6 +17,7 @@
  */
 import type { AgentProvider } from '../agentProvider';
 import type { ApiConnector, Connector, ConnectorKind, ConnectorStrength } from './types';
+import { validateConnectorEndpoint } from './endpoint';
 
 import claude from './claude';
 import codex from './codex';
@@ -33,10 +34,12 @@ import copilot from './copilot';
 import openai from './openai';
 import perplexity from './perplexity';
 import higgsfield from './higgsfield';
+import freellmapi from './freellmapi';
 import capcut from './capcut';
 
 export * from './types';
 export { cliConnector } from './cliConnector';
+export * from './endpoint';
 
 export const CONNECTORS: readonly Connector[] = [
   // CLI terminal agents (wrap the agentProvider presets)
@@ -56,6 +59,7 @@ export const CONNECTORS: readonly Connector[] = [
   openai,
   perplexity,
   higgsfield,
+  freellmapi,
   // Not connectable (no official automatic invocation)
   capcut
 ];
@@ -81,6 +85,41 @@ export function getApiConnector(id: unknown): ApiConnector | undefined {
   if (typeof id !== 'string') return undefined;
   const c = getConnector(id);
   return c && c.kind === 'api' ? c : undefined;
+}
+
+/** The API connector an agent command runs (`son-api <id> …`), or undefined. */
+export function apiConnectorIdForCommand(command: string | undefined | null): string | undefined {
+  if (typeof command !== 'string') return undefined;
+  const parsed = parseApiAgentCommand(command);
+  return parsed && !('error' in parsed) ? parsed.connector.id : undefined;
+}
+
+/** The runtime endpoint of an API connector: the user's override when the
+ *  connector allows one AND it passes validateConnectorEndpoint, else the default. */
+export function effectiveEndpoint(connector: ApiConnector, override: unknown): string {
+  if (!connector.api.editableEndpoint || override === undefined || override === null || override === '') return connector.api.endpoint;
+  const v = validateConnectorEndpoint(override);
+  return v.ok ? v.url : connector.api.endpoint;
+}
+
+/** Keep only {connectorId: url} pairs for connectors that allow an endpoint
+ *  override and whose url validates (normalized). Anything else is dropped. */
+export function sanitizeConnectorEndpoints(input: unknown): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return out;
+  for (const [id, raw] of Object.entries(input as Record<string, unknown>)) {
+    const c = getApiConnector(id);
+    if (!c || !c.api.editableEndpoint) continue;
+    const v = validateConnectorEndpoint(raw);
+    if (v.ok) out[id] = v.url;
+  }
+  return out;
+}
+
+/** How a person connects this AI: log in inside its own CLI, paste an API key, or not at all. */
+export type ConnectionMethod = 'login' | 'apiKey' | 'unavailable';
+export function connectionMethod(c: Connector): ConnectionMethod {
+  return c.kind === 'cli' ? 'login' : c.kind === 'api' ? 'apiKey' : 'unavailable';
 }
 
 /** The CLI connector wrapping an agentProvider preset, if one is registered. */

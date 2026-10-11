@@ -6,11 +6,14 @@
  * agentProvider.ts (spawn behavior), then one connector file calling this.
  */
 import { providerPreset, type AgentProvider } from '../agentProvider';
-import type { CliConnector, ConnectorStrength } from './types';
+import type { CliConnector, CliLoginSpec, ConnectorStrength } from './types';
 
 export function cliConnector(
   provider: AgentProvider,
-  meta: { id?: string; strengths: ConnectorStrength[]; docsUrl?: string; verified: boolean; verifiedNote?: string; label?: string }
+  meta: {
+    id?: string; strengths: ConnectorStrength[]; docsUrl?: string; verified: boolean; verifiedNote?: string; label?: string;
+    login?: CliLoginSpec;
+  }
 ): CliConnector {
   const preset = providerPreset(provider);
   return {
@@ -22,6 +25,7 @@ export function cliConnector(
     strengths: meta.strengths,
     docsUrl: meta.docsUrl ?? preset.docsUrl,
     verified: meta.verified,
-    verifiedNote: meta.verifiedNote
+    verifiedNote: meta.verifiedNote,
+    ...(meta.login ? { login: meta.login } : {})
   };
 }

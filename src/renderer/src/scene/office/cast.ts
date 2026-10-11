@@ -9,7 +9,7 @@
 import { Texture } from 'pixi.js';
 import { inferAgentProvider } from '@shared/agentProvider';
 import { paintPortrait, sceneFrameBufs, SCENE_W, SCENE_H } from './portraitArt';
-import { MASCOTS, MASCOT_NAMES, isMascotName, mascotForProvider, mascotSceneFrames, paintMascotPortrait, type MascotName } from './aiMascotArt';
+import { MASCOTS, MASCOT_NAMES, isMascotName, mascotForAgent, mascotSceneFrames, paintMascotPortrait, type MascotName } from './aiMascotArt';
 
 export type OfficeCharacterName =
   | MascotName
@@ -63,7 +63,8 @@ export const OFFICE_CAST: CastMember[] = [...MASCOT_CAST];
 export function visualCharacter(agent: { provider?: string | null; command?: string | null }): OfficeCharacterName {
   // Same resolution the rest of the app uses: the saved provider, else inferred from the
   // command binary (legacy agents, hand-typed commands), else Claude.
-  return mascotForProvider(inferAgentProvider(agent.command ?? undefined, agent.provider));
+  // An API agent (`son-api freellmapi`) shows its connector's own mascot.
+  return mascotForAgent(inferAgentProvider(agent.command ?? undefined, agent.provider), agent.command);
 }
 
 export const CAST_BY_NAME: Record<OfficeCharacterName, CastMember> =
