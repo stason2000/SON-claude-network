@@ -378,7 +378,7 @@ export function initAutoUpdater(getWebContents: () => WebContents | null): void 
       const autoUpdater = await loadAutoUpdater();
       logLine('quitAndInstall requested by the user');
       const cancelled = new Promise<{ ok: boolean; error?: string }>((resolve) => { pendingRestart = resolve; });
-      autoUpdater.quitAndInstall();
+      autoUpdater.quitAndInstall(process.platform === 'win32', true);
       // Settles ONLY if the quit was called off (abortPendingRestart) or the
       // native updater reported it failed (failPendingRestart, from the error
       // event). If the app is really going, the process exits here and the
