@@ -11,6 +11,8 @@
 // Output matches what cast.ts/CharacterSprite expect: an 18×32 scene frame grid
 // [stand, stepL, stepR, type1, type2, read1, read2, blocked] for front and back.
 
+import { BRAND_LOGOS, type BrandLogo } from './brandLogos';
+
 type RGB = [number, number, number];
 type Buf = Uint8ClampedArray;
 
@@ -326,6 +328,11 @@ export function mascotForProvider(provider: string | undefined | null): MascotNa
   return isMascotName(key) ? key : 'ai-custom';
 }
 
+/** The provider id behind a mascot ('ai-codex' → 'codex'); undefined for non-mascot names. */
+export function providerForMascot(name: string): string | undefined {
+  return isMascotName(name) ? name.slice(3) : undefined;
+}
+
 // ─── drawing primitives ──────────────────────────────────────────────────────
 const clamp = (v: number) => (v < 0 ? 0 : v > 255 ? 255 : Math.round(v));
 const lighten = (c: RGB): RGB => [clamp(c[0] * 1.2 + 8), clamp(c[1] * 1.2 + 8), clamp(c[2] * 1.2 + 8)];
@@ -444,6 +451,8 @@ const PORTRAIT_W = 18, PORTRAIT_H = 28;
 const portraitCache = new Map<MascotName, Buf>();
 
 export function paintMascotPortrait(ctx: CanvasRenderingContext2D, name: MascotName, scale = 2): void {
+  const brand = BRAND_LOGOS[name];
+  if (brand) { paintBrandLogo(ctx, brand, scale); return; }
   let buf = portraitCache.get(name);
   if (!buf) {
     buf = drawFrame(name, 0, 'open', PORTRAIT_W, PORTRAIT_H, 8, false);
@@ -458,4 +467,32 @@ export function paintMascotPortrait(ctx: CanvasRenderingContext2D, name: MascotN
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, PORTRAIT_W * scale, PORTRAIT_H * scale);
   ctx.drawImage(stage, 0, 0, PORTRAIT_W, PORTRAIT_H, 0, 0, PORTRAIT_W * scale, PORTRAIT_H * scale);
+}
+
+/** The provider's logo on a light rounded tile (so dark logos stay visible in dark mode). */
+function paintBrandLogo(ctx: CanvasRenderingContext2D, brand: BrandLogo, scale: number): void {
+  const w = PORTRAIT_W * scale, h = PORTRAIT_H * scale;
+  ctx.clearRect(0, 0, w, h);
+  const side = Math.min(w, h * 0.72);
+  const x0 = (w - side) / 2, y0 = (h - side) / 2;
+  ctx.save();
+  ctx.fillStyle = '#FFF8E7';
+  ctx.strokeStyle = '#26222E';
+  ctx.lineWidth = Math.max(1, scale * 0.5);
+  const r = side * 0.18;
+  ctx.beginPath();
+  ctx.moveTo(x0 + r, y0);
+  ctx.arcTo(x0 + side, y0, x0 + side, y0 + side, r);
+  ctx.arcTo(x0 + side, y0 + side, x0, y0 + side, r);
+  ctx.arcTo(x0, y0 + side, x0, y0, r);
+  ctx.arcTo(x0, y0, x0 + side, y0, r);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  const pad = side * 0.2, inner = side - pad * 2;
+  ctx.translate(x0 + pad, y0 + pad);
+  ctx.scale(inner / 24, inner / 24);
+  ctx.fillStyle = brand.hex;
+  ctx.fill(new Path2D(brand.path));
+  ctx.restore();
 }

@@ -1582,7 +1582,13 @@ export function OfficeFloor() {
           if (!present.has(id)) removeCharacter(id);
         }
         for (const agent of agents) {
-          const rt = runtimes.get(agent.id);
+          let rt = runtimes.get(agent.id);
+          // The agent's AI was changed (e.g. Edit agent → engine): rebuild its sprite so the
+          // floor shows the new provider's character instead of the old one.
+          if (rt && rt.charName !== visualCharacter(agent) && theme.cast.byName[visualCharacter(agent)]) {
+            removeCharacter(agent.id);
+            rt = undefined;
+          }
           if (!rt) void addCharacter(agent);
           else {
             rt.character.setName(agent.name);

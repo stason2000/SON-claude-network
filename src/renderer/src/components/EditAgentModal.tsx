@@ -6,6 +6,7 @@ import { SpritePortrait } from './SpritePortrait';
 import { ProviderLogo } from './ProviderLogo';
 import { useStore, type Agent } from '@/store/store';
 import { OFFICE_CAST, type OfficeCharacterName } from '@/scene/office/cast';
+import { mascotForProvider, providerForMascot } from '@/scene/office/aiMascotArt';
 import { type AccentColorName } from '@/design/tokens';
 import {
   type AgentProvider,
@@ -52,9 +53,10 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
   // Keep form in sync when the selected agent changes while the modal is open.
   useEffect(() => {
     setName(agent.name);
-    setCharacter(agent.character);
     setAccent(agent.accent);
-    setProvider(inferAgentProvider(agent.command, agent.provider));
+    const inferred = inferAgentProvider(agent.command, agent.provider);
+    setProvider(inferred);
+    setCharacter(mascotForProvider(inferred));
     setModel(agent.model);
     setDescription(agent.description);
     setGoal(agent.goal ?? '');
@@ -62,6 +64,7 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
 
   const pickProvider = (id: AgentProvider) => {
     setProvider(id);
+    setCharacter(mascotForProvider(id));   // the picture always follows the AI
     if (!config) {
       setModel(undefined);
       return;
@@ -140,7 +143,12 @@ export function EditAgentModal({ agent, onClose }: EditAgentModalProps) {
                       <button
                         key={c.name}
                         type="button"
-                        onClick={() => { setCharacter(c.name); setName(c.displayName); }}
+                        onClick={() => {
+                          setCharacter(c.name);
+                          setName(c.displayName);
+                          const id = providerForMascot(c.name);
+                          if (id && id !== provider) pickProvider(id as AgentProvider);
+                        }}
                         title={c.blurb}
                         style={{
                           padding: 4,

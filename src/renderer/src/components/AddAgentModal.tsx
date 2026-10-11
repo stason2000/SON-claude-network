@@ -8,6 +8,7 @@ import { Icon } from './Icon';
 import { ProviderLogo } from './ProviderLogo';
 import { useStore, type Agent } from '@/store/store';
 import { OFFICE_CAST, DEFAULT_CHARACTER, type OfficeCharacterName } from '@/scene/office/cast';
+import { mascotForProvider, providerForMascot } from '@/scene/office/aiMascotArt';
 import { type AccentColorName } from '@/design/tokens';
 import type { HireManifest } from '@shared/hire';
 import { hireQueueProgress } from '@shared/hireQueue';
@@ -189,7 +190,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
   const initialProvider = inferAgentProvider(config.defaultCommand);
   const initialModel = isClaudeProvider(initialProvider) ? config.defaultModel : undefined;
 
-  const [name, setName] = useState(pendingHire?.name ?? 'Jim');
+  const [name, setName] = useState(pendingHire?.name ?? 'Claude');
   const [character, setCharacter] = useState<OfficeCharacterName>(knownCharacter(pendingHire?.character));
   const [accent, setAccent] = useState<AccentColorName>(knownAccent(pendingHire?.accent));
   const [cwd, setCwd] = useState<string>(config.registeredRepos[0] ?? '');
@@ -200,6 +201,8 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
   const [model, setModel] = useState<string | undefined>(
     pendingHire ? pendingHire.model : initialModel
   );
+  // The agent's picture is its AI's logo: follow the provider whenever it changes.
+  useEffect(() => { setCharacter(mascotForProvider(provider)); }, [provider]);
   const [command, setCommand] = useState(
     pendingHire ? hireCommand(pendingHire) : buildSpawnCommand(config, initialModel, initialProvider)
   );
@@ -689,7 +692,13 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                         {OFFICE_CAST.map(c => (
                           <button
                             key={c.name}
-                            onClick={() => { setCharacter(c.name); setName(c.displayName); }}
+                            onClick={() => {
+                              // The pictures ARE the AIs: picking one also picks the engine that runs.
+                              setCharacter(c.name);
+                              setName(c.displayName);
+                              const id = providerForMascot(c.name);
+                              if (id && id !== provider) pickProvider(id as AgentProvider);
+                            }}
                             title={c.blurb}
                             style={{
                               padding: 4,

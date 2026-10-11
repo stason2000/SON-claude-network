@@ -7,6 +7,7 @@
 // sheets are no longer used for the cast. See assets/ATTRIBUTION.md.
 
 import { Texture } from 'pixi.js';
+import { inferAgentProvider } from '@shared/agentProvider';
 import { paintPortrait, sceneFrameBufs, SCENE_W, SCENE_H } from './portraitArt';
 import { MASCOTS, MASCOT_NAMES, isMascotName, mascotForProvider, mascotSceneFrames, paintMascotPortrait, type MascotName } from './aiMascotArt';
 
@@ -26,7 +27,8 @@ export interface CastMember {
 }
 
 /** Selectable roster, in display order. */
-export const OFFICE_CAST: CastMember[] = [
+/** The Office cast — no longer offered in pickers (kept only so old saved agents resolve). */
+const HUMAN_CAST: CastMember[] = [
   { name: 'michael',  displayName: 'Michael',  shirt: '#5a6b8c', blurb: "World's best boss" },
   { name: 'jim',      displayName: 'Jim',      shirt: '#6fa8dc', blurb: 'Salesman, prankster' },
   { name: 'pam',      displayName: 'Pam',      shirt: '#9caf88', blurb: 'Receptionist, artist' },
@@ -50,21 +52,24 @@ const MASCOT_CAST: CastMember[] = MASCOT_NAMES.map((name) => {
   const hex = '#' + m.base.map((v) => v.toString(16).padStart(2, '0')).join('');
   return { name, displayName: m.label, shirt: hex, blurb: m.blurb };
 });
-OFFICE_CAST.unshift(...MASCOT_CAST);
+/** Characters offered in the agent pickers: one per AI provider. */
+export const OFFICE_CAST: CastMember[] = [...MASCOT_CAST];
 
 /**
  * The character an agent is drawn as. Every agent is shown as the mascot of the
  * AI that runs it (eyes-only; the eyes change with its state), not as one of the
  * human cast. The stored `character` field is kept for compatibility.
  */
-export function visualCharacter(agent: { provider?: string | null }): OfficeCharacterName {
-  return mascotForProvider(agent.provider ?? 'claude');
+export function visualCharacter(agent: { provider?: string | null; command?: string | null }): OfficeCharacterName {
+  // Same resolution the rest of the app uses: the saved provider, else inferred from the
+  // command binary (legacy agents, hand-typed commands), else Claude.
+  return mascotForProvider(inferAgentProvider(agent.command ?? undefined, agent.provider));
 }
 
 export const CAST_BY_NAME: Record<OfficeCharacterName, CastMember> =
-  Object.fromEntries(OFFICE_CAST.map((c) => [c.name, c])) as Record<OfficeCharacterName, CastMember>;
+  Object.fromEntries([...MASCOT_CAST, ...HUMAN_CAST].map((c) => [c.name, c])) as Record<OfficeCharacterName, CastMember>;
 
-export const DEFAULT_CHARACTER: OfficeCharacterName = 'jim';
+export const DEFAULT_CHARACTER: OfficeCharacterName = 'ai-claude';
 
 export function hexToNumber(hex: string): number {
   return parseInt(hex.replace('#', ''), 16);
