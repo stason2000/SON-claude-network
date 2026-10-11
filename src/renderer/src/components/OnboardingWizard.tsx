@@ -294,7 +294,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                     boxShadow: 'inset 0 0 0 1.5px var(--cth-ink-500)',
                     display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden'
                   }}>
-                    <SpritePortrait character="michael" scale={2} />
+                    <SpritePortrait character="ai-claude" scale={2} />
                   </div>
                   <div>
                     <div style={{ fontFamily: 'var(--cth-font-display)', fontSize: 12, lineHeight: '18px' }}>
@@ -338,7 +338,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                     boxShadow: 'inset 0 0 0 1.5px var(--cth-ink-500)',
                     display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden'
                   }}>
-                    <SpritePortrait character="michael" scale={2} />
+                    <SpritePortrait character="ai-claude" scale={2} />
                   </div>
                   <div>
                     <div style={{
