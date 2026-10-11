@@ -516,6 +516,16 @@ export function paintMascotPortrait(ctx: CanvasRenderingContext2D, name: MascotN
 }
 
 /** The provider's logo on a light rounded tile (so dark logos stay visible in dark mode). */
+/** Near-black marks vanish on the dark theme; draw them light there. */
+function readableLogoColor(hex: string): string {
+  if (hex.toLowerCase() !== '#000000') return hex;
+  try {
+    const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(getComputedStyle(document.body).backgroundColor);
+    if (m && (Number(m[1]) * 299 + Number(m[2]) * 587 + Number(m[3]) * 114) / 1000 < 128) return '#F2EFE6';
+  } catch { /* no DOM */ }
+  return '#1A1A1A';
+}
+
 function paintBrandLogo(ctx: CanvasRenderingContext2D, brand: BrandLogo, scale: number): void {
   // Clean look: just the company logo, as large as the portrait box allows, on a
   // transparent background (no inner tile / outline).
@@ -528,7 +538,7 @@ function paintBrandLogo(ctx: CanvasRenderingContext2D, brand: BrandLogo, scale: 
   ctx.save();
   ctx.translate((w - side) / 2, (visibleH - side) / 2);
   ctx.scale(side / 24, side / 24);
-  ctx.fillStyle = brand.hex;
-  ctx.fill(new Path2D(brand.path));
+  ctx.fillStyle = readableLogoColor(brand.hex);
+  ctx.fill(new Path2D(brand.path), brand.evenodd ? 'evenodd' : 'nonzero');
   ctx.restore();
 }

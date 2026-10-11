@@ -59,7 +59,7 @@ const DESK_REST_SECONDS = 30;
 // Nameplate. Small and thinly outlined on purpose: a dozen of these on screen
 // at once should read as labels under the sprites, not compete with the action
 // bubbles above their heads.
-const NAME_TAG_FONT_SIZE = 6;
+const NAME_TAG_FONT_SIZE = 7;
 const NAME_TAG_STROKE_WIDTH = 1;
 const NAME_TAG_OFFSET_Y = -4;
 const NAME_TAG_PAD_X = 2;
@@ -194,12 +194,16 @@ export class Character {
     this.nameTagPlate = new Graphics();
     this.nameTagText = new Text({
       text: options.displayName,
+      // The floor is drawn through a scaled world container, so a 1x text texture
+      // is resampled and the name goes soft. Rasterise at 4x (or the screen's
+      // density if higher) so it stays sharp at any zoom.
+      resolution: Math.max(4, Math.ceil((window.devicePixelRatio || 1) * 2)),
       style: {
         fontSize: NAME_TAG_FONT_SIZE,
         fontWeight: 'bold',
         fill: colors.cream[50],
         stroke: { color: colors.ink[900], width: NAME_TAG_STROKE_WIDTH, join: 'round' },
-        fontFamily: 'monospace',
+        fontFamily: '"Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", monospace',
         align: 'center'
       }
     });

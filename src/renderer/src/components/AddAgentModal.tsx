@@ -523,7 +523,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
         zIndex: 500
       }}
     >
-      <div onClick={(e) => e.stopPropagation()} style={{ width: 940, maxWidth: '95vw' }}>
+      <div className="cth-readable" onClick={(e) => e.stopPropagation()} style={{ width: 940, maxWidth: 'calc(95vw / 1.2)' }}>
         <PixelPanel
           variant="dialog"
           title={tr('addAgent.title')}
@@ -536,7 +536,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
               hire-import review banner, the error, and the footer stay pinned
               around the section pane. maxHeight keeps the dialog within the
               viewport (title bar stays pinned). */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 16, maxHeight: '86vh', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 16, maxHeight: 'calc(86vh / 1.2)', overflowY: 'auto' }}>
             {hireMeta && (
               <div style={{
                 padding: '6px 10px',

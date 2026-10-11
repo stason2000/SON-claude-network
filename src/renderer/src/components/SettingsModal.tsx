@@ -830,9 +830,10 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
       }}
     >
       <div
+        className="cth-readable"
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: 840, maxWidth: '92vw', maxHeight: '88vh',
+          width: 840, maxWidth: 'calc(92vw / 1.2)', maxHeight: 'calc(88vh / 1.2)',
           display: 'flex', flexDirection: 'column',
           filter: 'drop-shadow(4px 4px 0 rgba(26, 19, 32, 0.25))'
         }}
@@ -841,7 +842,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
           variant="dialog"
           title={modalTitle}
           noPadding
-          style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', maxHeight: '88vh' }}
+          style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', maxHeight: 'calc(88vh / 1.2)' }}
         >
           {/* === Change home sub-modal === */}
           {changeHome ? (

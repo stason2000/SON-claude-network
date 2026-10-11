@@ -369,3 +369,19 @@ canvas, img, svg { image-rendering: pixelated; image-rendering: crisp-edges; }
 .cth-md-card hr { margin: 0.8em 0; }
 .cth-md-card table { margin: 0.5em 0; }
 .cth-md-card th, .cth-md-card td { padding: 3px 7px; font-size: 0.9em; }
+
+/* Readable mode for text-heavy dialogs (Settings): the pixel display face is
+   Latin-only and tiny, so Korean fell back at 8-9px and was unreadable. Swap in a
+   real Korean UI face, scale the dialog up, and brighten the red accents. */
+.cth-readable {
+  zoom: 1.2;
+  --cth-font-display: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
+  --cth-font-mono: "Consolas", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", monospace;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.cth-readable [style*='font-display'] { font-weight: 700; letter-spacing: 0; font-size: 13px !important; line-height: 1.45 !important; }
+:root[data-cth-theme='dark'] .cth-readable {
+  --cth-coral: #FF9E94;
+  --cth-status-blocked: #FF9E94;
+}
