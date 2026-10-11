@@ -35,6 +35,7 @@ import openai from './openai';
 import perplexity from './perplexity';
 import higgsfield from './higgsfield';
 import freellmapi from './freellmapi';
+import openrouter from './openrouter';
 import capcut from './capcut';
 
 export * from './types';
@@ -60,6 +61,7 @@ export const CONNECTORS: readonly Connector[] = [
   perplexity,
   higgsfield,
   freellmapi,
+  openrouter,
   // Not connectable (no official automatic invocation)
   capcut
 ];
