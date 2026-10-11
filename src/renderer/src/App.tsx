@@ -5,6 +5,8 @@ import { startMockLoop, stopMockLoop } from '@/store/mockEvents';
 import type { HarnessConfig } from '@/store/config';
 import { DEFAULT_ORG_TRIGGER } from '@shared/triggers';
 import { OfficeFloor } from '@/scene/office/OfficeFloor';
+import { TeamMap } from '@/components/TeamMap/TeamMap';
+import { MapStyleToggle, useMapStyle } from '@/components/TeamMap/mapStyle';
 import { useHive } from '@/hooks/useHive';
 import { useResolvedGodName } from '@/hooks/useResolvedGodName';
 import { useGodNameSync } from '@/i18n/useGodNameSync';
@@ -66,6 +68,8 @@ export function App() {
   const setIdeOpen = useStore(s => s.setIdeOpen);
   const layoutMode = useStore(s => s.layoutMode);
   const setLayoutMode = useStore(s => s.setLayoutMode);
+  /** Main-area picture: smooth 팀 지도 (default) or the old pixel office. */
+  const mapStyle = useMapStyle();
 
   const [config, setConfig] = useState<HarnessConfig | null>(null);
   // Whether the user has passed the launch-time hive picker this session. Starts
@@ -473,10 +477,12 @@ export function App() {
         gap: 0
       }}>
         <div style={{ flex: 1, minHeight: 0, minWidth: 0, position: 'relative' }}>
-          <OfficeFloor />
+          {mapStyle === 'smooth'
+            ? <TeamMap departments={config?.departments} />
+            : <><OfficeFloor /><MapStyleToggle /></>}
           <MemoryPanel />
           {agentCount === 0 && godStatus === 'booting' && <MichaelBooting />}
-          {agentCount === 0 && godStatus !== 'booting' && (
+          {mapStyle === 'pixel' && agentCount === 0 && godStatus !== 'booting' && (
             <div style={{
               position: 'absolute', inset: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
