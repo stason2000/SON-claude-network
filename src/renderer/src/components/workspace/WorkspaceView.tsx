@@ -2,7 +2,7 @@
  * 작업 공간 (workspace) view (#6) — an alternative layout to the classic office
  * floor, built only from panels that already exist:
  *
- *   sidebar  : office sections (할 일 / 받은 편지함 / 자동화 / 기억 / 스킬 / 회의 녹취)
+ *   sidebar  : office sections (할 일 / 알림함 / 자동화 / 기억 / 도우미 기능 / 회의 녹취)
  *              then every live agent with a status dot + status word
  *   main     : the chosen section, or the selected agent's "room"
  *              - the orchestrator's room is the existing CommandCenterPanel
