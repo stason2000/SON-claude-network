@@ -70,6 +70,7 @@ import { getApiConnector, isCliConnectorId, sanitizeCliConnected, sanitizeConnec
 import { launchCliLogin } from './cliLogin';
 import { checkCliConnection } from './cliStatus';
 import { testApiConnector } from './connectorTest';
+import { registerConnectorUsageIpc, trimUsageLogFile } from './connectorUsage';
 import { buildPtyEnv } from './ptyEnv';
 import { userShellPath } from './shellEnv';
 import { validateBaseUrl, buildAuthHeaders, resolveUpstreamUrl, secretRefFor, INTEGRATION_TEMPLATES } from '../shared/integrations';
@@ -2620,6 +2621,12 @@ function apiAgentScriptPath(): string {
     ? join(process.resourcesPath, 'api-agent.cjs')
     : join(app.getAppPath(), 'resources', 'api-agent.cjs');
 }
+/** Local API request log for "사용량·한도": one {ts, connector, ok, status} line
+ *  per request (no prompt / reply / key). Under userData — out of the workspace
+ *  repo, out of MemPalace, never synced. */
+function apiUsageLogPath(): string {
+  return join(app.getPath('userData'), 'api-usage.jsonl');
+}
 
 /** Spawn options shared by the `pty:spawn` IPC handler and the god-triggered
  *  ephemeral-worker watcher. */
@@ -2685,8 +2692,10 @@ async function spawnAgentCore(opts: AgentSpawnOptions, owner: Electron.WebConten
       execPath: process.execPath,
       scriptPath: apiAgentScriptPath(),
       getKey: (id) => apiKeyStore.getKeyForSpawn(id),
-      getEndpoint: (id) => readConfig().connectorEndpoints?.[id]
+      getEndpoint: (id) => readConfig().connectorEndpoints?.[id],
+      usageLogPath: apiUsageLogPath()
     });
+    if (apiSpawn && !('error' in apiSpawn)) trimUsageLogFile(apiUsageLogPath());
     if (apiSpawn && 'error' in apiSpawn) {
       analytics.track('agent_spawn_failed', { provider, reason: 'spawn_error' });
       return { ok: false, error: apiSpawn.error };
@@ -3308,6 +3317,12 @@ ipcMain.handle('connectorTest:run', (_evt, id: unknown) =>
     getEndpoint: (cid) => readConfig().connectorEndpoints?.[cid],
     fetch: globalThis.fetch
   }));
+// ─── IPC: "사용량·한도" (see connectorUsage.ts) — numbers only, key stays here ──
+registerConnectorUsageIpc(ipcMain, {
+  getOpenRouterKey: () => apiKeyStore.getKeyForSpawn('openrouter'),
+  logPath: apiUsageLogPath,
+  fetch: globalThis.fetch
+});
 // Michael's operating rules file (<workspace home>/michael-rules.md; see michaelRules.ts).
 registerMichaelRulesIpc(ipcMain, () => readConfig().harnessHome, () =>
   defaultRulesPath({ packaged: app.isPackaged, resourcesPath: process.resourcesPath, appPath: app.getAppPath() }));

@@ -5,6 +5,7 @@ import { PixelPanel } from './PixelPanel';
 import { PixelButton } from './PixelButton';
 import { CliLoginButton, KeyPageButton, MethodBadge } from './ConnectorBits';
 import { ConnectionTestButton, EndpointEditor, FreeLlmApiGuide } from './ConnectorsSettings';
+import { UsageLimitsTab } from './UsageLimitsTab';
 import { recheckCli, refreshAiConnections, setCliConnected, setHasKey, useAiConnections } from './aiConnections';
 
 /**
@@ -34,6 +35,7 @@ export function AiConnectModal({ onClose }: { onClose: () => void }) {
   const s = useAiConnections();
   const [showConnected, setShowConnected] = useState(false);
   const [notice, setNotice] = useState('');
+  const [tab, setTab] = useState<'connect' | 'usage'>('connect');
   const lastFocusCheck = useRef(0);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
@@ -84,7 +86,35 @@ export function AiConnectModal({ onClose }: { onClose: () => void }) {
           noPadding
           style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', maxHeight: 'calc(88vh / 1.2)' }}
         >
-          <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', minHeight: 0 }}>
+          <div role="tablist" aria-label={t('extra.aiConnect.title')} style={{ display: 'flex', gap: 0, padding: '10px 16px 0', boxShadow: 'inset 0 -1px 0 var(--cth-ink-300)' }}>
+            {(['connect', 'usage'] as const).map((id) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                id={`ai-connect-tab-${id}`}
+                aria-selected={tab === id}
+                aria-controls={`ai-connect-panel-${id}`}
+                onClick={() => setTab(id)}
+                style={{
+                  padding: '6px 14px 5px', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                  fontSize: 13, fontWeight: tab === id ? 700 : 500,
+                  color: tab === id ? 'var(--cth-ink-900)' : 'var(--cth-ink-700)',
+                  background: tab === id ? 'var(--cth-paper-100)' : 'transparent',
+                  boxShadow: tab === id ? 'inset 0 0 0 1px var(--cth-ink-300), inset 0 -3px 0 var(--cth-sky)' : 'none'
+                }}
+              >
+                {id === 'connect' ? t('extra.usage.tabConnect') : t('extra.usage.tabUsage')}
+              </button>
+            ))}
+          </div>
+          {tab === 'usage' && (
+            <div role="tabpanel" id="ai-connect-panel-usage" aria-labelledby="ai-connect-tab-usage" style={{ padding: 16, overflowY: 'auto', minHeight: 0 }}>
+              <UsageLimitsTab onGoConnect={() => setTab('connect')} />
+            </div>
+          )}
+          {tab === 'connect' && (
+          <div role="tabpanel" id="ai-connect-panel-connect" aria-labelledby="ai-connect-tab-connect" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', minHeight: 0 }}>
             <div style={{ fontSize: 13, lineHeight: '19px', color: 'var(--cth-ink-900)' }}>{t('extra.aiConnect.intro')}</div>
             {notice && (
               <div role="status" style={{ ...small, color: 'var(--cth-ink-900)', padding: '6px 10px', background: 'var(--cth-mint-light, var(--cth-cream-100))', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)' }}>
@@ -119,10 +149,13 @@ export function AiConnectModal({ onClose }: { onClose: () => void }) {
               </div>
             )}
           </div>
+          )}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '10px 16px', boxShadow: 'inset 0 1px 0 var(--cth-ink-100)' }}>
-            <PixelButton size="sm" variant="ghost" onClick={() => void refreshAiConnections({ cli: true })} disabled={s.checking}>
-              {t('extra.aiConnect.recheckAll')}
-            </PixelButton>
+            {tab === 'connect' && (
+              <PixelButton size="sm" variant="ghost" onClick={() => void refreshAiConnections({ cli: true })} disabled={s.checking}>
+                {t('extra.aiConnect.recheckAll')}
+              </PixelButton>
+            )}
             <PixelButton size="sm" onClick={onClose}>{t('extra.aiConnect.close')}</PixelButton>
           </div>
         </PixelPanel>

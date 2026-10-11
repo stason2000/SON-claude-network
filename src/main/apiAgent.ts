@@ -13,6 +13,7 @@
  * (visible in process listings), not logged, and not returned to the renderer.
  * Electron-free apart from the injected paths, so it is unit-testable.
  */
+import { isAbsolute } from 'node:path';
 import { effectiveEndpoint, parseApiAgentCommand, type ApiConnector } from '../shared/connectors';
 
 export interface ApiAgentSpawn {
@@ -32,6 +33,10 @@ export function prepareApiAgentSpawn(
     /** The user's saved endpoint override (HarnessConfig.connectorEndpoints). Only
      *  honored for connectors with `editableEndpoint`, and only when it validates. */
     getEndpoint?: (connectorId: string) => string | undefined;
+    /** Absolute path of the local usage log (userData/api-usage.jsonl). The child
+     *  appends one {ts, connector, ok, status} line per request — never prompt,
+     *  reply or key (see src/shared/connectorUsage.ts). */
+    usageLogPath?: string;
   }
 ): null | { error: string } | ApiAgentSpawn {
   const parsed = parseApiAgentCommand(command, args ?? []);
@@ -48,6 +53,7 @@ export function prepareApiAgentSpawn(
     SON_API_BASE_URL: ''
   };
   if (key) env.SON_API_KEY = key;
+  if (deps.usageLogPath && isAbsolute(deps.usageLogPath)) env.SON_API_USAGE_LOG = deps.usageLogPath;
   return {
     command: deps.execPath,
     args: [deps.scriptPath, '--connector', connector.id, ...(model ? ['--model', model] : [])],

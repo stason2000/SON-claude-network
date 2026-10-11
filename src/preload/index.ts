@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron';
 import type { AgentProvider } from '../shared/agentProvider';
 import type { HireManifest } from '../shared/hire';
+import type { ConnectorUsageSummary, OpenRouterUsageResult } from '../shared/connectorUsage';
 import type { IgReadResult, InstagramStatus, InstagramTranscribeMode } from '../shared/instagram';
 import type { MeetingFileInfo, MeetingStatus } from '../shared/meetings';
 import type { SyncReply, SyncStatus } from '../shared/sync/status';
@@ -1373,6 +1374,13 @@ const api = {
   /** GET {endpoint}/models with the stored key. Returns status only — never the key. */
   connectorTest: (id: string): Promise<{ ok: true; models?: number } | { ok: false; error: string; status?: number }> =>
     ipcRenderer.invoke('connectorTest:run', id),
+  /** "사용량·한도": OpenRouter GET /api/v1/key run MAIN-side with the stored key.
+   *  Returns parsed numbers only — never the key, never the raw body. */
+  connectorUsageOpenRouter: (): Promise<OpenRouterUsageResult> =>
+    ipcRenderer.invoke('connectorUsage:openrouter'),
+  /** "사용량·한도": local request counts per API connector (userData/api-usage.jsonl). */
+  connectorUsageLocal: (): Promise<{ now: number; byConnector: Record<string, ConnectorUsageSummary> }> =>
+    ipcRenderer.invoke('connectorUsage:local'),
   // Michael's operating rules (<workspace home>/michael-rules.md). No path crosses IPC.
   michaelRulesGet: (): Promise<{ ok: true; text: string; path: string; createdFromDefault?: boolean } | { ok: false; error: string }> =>
     ipcRenderer.invoke('michaelRules:get'),

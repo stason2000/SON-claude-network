@@ -18,6 +18,10 @@
  *   SON_API_BASE_URL   optional origin override (tests / local mock servers).
  *                      Main sets it to '' so an inherited value can't redirect a
  *                      real key elsewhere.
+ *   SON_API_USAGE_LOG  optional absolute path (userData/api-usage.jsonl). One JSON
+ *                      line {ts, connector, ok, status} is appended per request —
+ *                      NEVER the prompt, the reply or the key (same shape as
+ *                      sanitizeUsageLine in src/shared/connectorUsage.ts).
  *
  * Reads one prompt per line from stdin, streams the reply to stdout, and keeps
  * the conversation history in memory. `/clear` resets history, `/exit` quits.
@@ -25,6 +29,8 @@
  */
 
 const readline = require('node:readline');
+const fs = require('node:fs');
+const path = require('node:path');
 const { randomUUID } = require('node:crypto');
 
 // ── args / config ────────────────────────────────────────────────────────────
@@ -79,6 +85,39 @@ function resolveEndpoint(endpoint) {
 }
 const ENDPOINT = resolveEndpoint(cfg.endpoint);
 const ORIGIN = new URL(ENDPOINT).origin;
+
+// ── local usage log ("사용량·한도") ────────────────────────────────────────────
+const USAGE_LOG = (() => {
+  const p = (process.env.SON_API_USAGE_LOG || '').trim();
+  return p && path.isAbsolute(p) ? p : '';
+})();
+const USAGE_MAX_LINES = 5000;
+/** Outcome of the request in flight: { ok, status } (status = HTTP code or null). */
+let outcome = null;
+const note = (ok, status) => {
+  outcome = { ok: !!ok, status: Number.isInteger(status) && status >= 100 && status <= 599 ? status : null };
+};
+function logUsage(result) {
+  if (!USAGE_LOG || !/^[a-z0-9][a-z0-9-]{0,39}$/.test(connectorId)) return;
+  // Exactly these four fields. Nothing user-written or secret ever goes here.
+  const line = JSON.stringify({ ts: Date.now(), connector: connectorId, ok: !!result.ok, status: result.status });
+  try {
+    fs.mkdirSync(path.dirname(USAGE_LOG), { recursive: true });
+    fs.appendFileSync(USAGE_LOG, `${line}\n`, { encoding: 'utf8', mode: 0o600 });
+    // Size guard between app reads: keep only the last USAGE_MAX_LINES lines.
+    if (fs.statSync(USAGE_LOG).size > USAGE_MAX_LINES * 200) {
+      const lines = fs.readFileSync(USAGE_LOG, 'utf8').split('\n').filter(Boolean);
+      fs.writeFileSync(USAGE_LOG, `${lines.slice(-USAGE_MAX_LINES).join('\n')}\n`, { encoding: 'utf8', mode: 0o600 });
+    }
+  } catch {
+    /* best-effort: a usage counter must never break the chat */
+  }
+}
+/** A mid-stream error frame's numeric code (OpenRouter sends e.g. 429), if any. */
+const frameStatus = (ev, fallback) => {
+  const c = ev && ev.error && ev.error.code;
+  return Number.isInteger(c) ? c : fallback;
+};
 
 function authHeader() {
   return cfg.authScheme === 'key' ? `Key ${KEY}` : `Bearer ${KEY}`;
@@ -173,6 +212,7 @@ async function askResponses(prompt) {
       redirect: 'error',
       signal: ac.signal
     });
+    note(res.ok, res.status);
     if (!res.ok) {
       history.pop();
       errOut(`[${label}] ${await failureMessage(res)}`);
@@ -188,6 +228,7 @@ async function askResponses(prompt) {
           reply += ev.delta;
           out(ev.delta);
         } else if (ev.type === 'error' || ev.type === 'response.failed') {
+          note(false, frameStatus(ev, res.status));
           const m = (ev.error && ev.error.message) || (ev.response && ev.response.error && ev.response.error.message) || ev.message || 'stream error';
           errOut(`\n[${label}] ${m}`);
         } else if (ev.choices && ev.choices[0] && ev.choices[0].delta && typeof ev.choices[0].delta.content === 'string') {
@@ -202,6 +243,7 @@ async function askResponses(prompt) {
     else history.pop();
   } catch (e) {
     history.pop();
+    note(false, null);
     errOut(`[${label}] ${networkMessage(e)}`);
   } finally {
     clearTimeout(timer);
@@ -225,6 +267,7 @@ async function askChat(prompt) {
       redirect: 'error',
       signal: ac.signal
     });
+    note(res.ok, res.status);
     if (!res.ok) {
       chatHistory.pop();
       errOut(`[${label}] ${await failureMessage(res)}`);
@@ -243,6 +286,7 @@ async function askChat(prompt) {
           reply += d.content;
           out(d.content);
         } else if (ev && ev.error) {
+          note(false, frameStatus(ev, res.status));
           errOut(`\n[${label}] ${(ev.error && ev.error.message) || 'stream error'}`);
         }
       }
@@ -252,6 +296,7 @@ async function askChat(prompt) {
     else chatHistory.pop();
   } catch (e) {
     chatHistory.pop();
+    note(false, null);
     errOut(`[${label}] ${networkMessage(e)}`);
   } finally {
     clearTimeout(timer);
@@ -285,6 +330,7 @@ async function askHiggsfield(prompt) {
       body: JSON.stringify({ prompt }),
       redirect: 'error'
     });
+    note(res.ok, res.status);
     if (!res.ok) return errOut(`[${label}] ${await failureMessage(res)}`);
     const job = await res.json();
     let statusUrl = typeof job.status_url === 'string' ? job.status_url : `${ORIGIN}/requests/${job.request_id}/status`;
@@ -297,13 +343,17 @@ async function askHiggsfield(prompt) {
     while (Date.now() < deadline) {
       await sleep(Number(process.env.SON_API_POLL_MS) || 3000);
       const r = await fetch(statusUrl, { headers, redirect: 'error' });
-      if (!r.ok) return errOut(`[${label}] ${await failureMessage(r)}`);
+      if (!r.ok) {
+        note(false, r.status);
+        return errOut(`[${label}] ${await failureMessage(r)}`);
+      }
       const st = await r.json();
       if (st.status !== last) {
         out(`[${label}] ${st.status}\n`);
         last = st.status;
       }
       if (TERMINAL.has(st.status)) {
+        if (st.status !== 'completed') note(false, 200);
         if (st.status === 'completed') {
           const urls = collectUrls(st);
           out(urls.length ? `${urls.join('\n')}\n` : `[${label}] 완료 (결과 URL 없음) / completed (no result URL)\n`);
@@ -311,8 +361,10 @@ async function askHiggsfield(prompt) {
         return;
       }
     }
+    note(false, null);
     errOut(`[${label}] 시간 초과 / timed out waiting for the result`);
   } catch (e) {
+    note(false, null);
     errOut(`[${label}] ${networkMessage(e)}`);
   }
 }
@@ -346,7 +398,9 @@ async function drain() {
       out(`${NO_KEY_MSG}\n`);
       continue;
     }
+    outcome = null;
     await ask(line);
+    if (outcome) logUsage(outcome);
   }
   busy = false;
   showPrompt();

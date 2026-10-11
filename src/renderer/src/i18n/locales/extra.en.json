@@ -609,5 +609,57 @@
     "autoLogoutHint": "The AI's own program reports its login. To log out, do it in that program.",
     "confirmClearKey": "Delete the saved API key for {{label}}? AI employees using this AI will stop working.",
     "close": "Close"
+  },
+  "usage": {
+    "tabConnect": "Connect",
+    "tabUsage": "Usage & limits",
+    "intro": "How much each AI has used, so you can see a limit coming before work gets blocked.",
+    "refresh": "Refresh",
+    "refreshing": "Loading…",
+    "apiTitle": "AIs connected with an API key",
+    "or": {
+      "live": "Numbers straight from OpenRouter (as of {{time}})",
+      "freeDaily": "Free-model requests today: {{used}} / {{limit}} ({{remaining}} left)",
+      "freeDailyMissing": "OpenRouter did not report today's free-model request count.",
+      "resetIn": "Free requests refill in {{h}} h {{m}} min ({{clock}}).",
+      "usedUp": "Today's free-model requests are used up. Wait for the refill or use another AI.",
+      "credits": "Credits used: today {{today}} · all time {{total}}",
+      "keyLimit": "This key's limit: {{remaining}} left of {{limit}}",
+      "freeTierNote": "This account has not bought credits yet. Buying credits on OpenRouter raises the daily free-model request cap.",
+      "err": {
+        "no-key": "No OpenRouter key is stored. Save one on the \"Connect\" tab.",
+        "bad-key": "The key looks wrong. Save it again on the \"Connect\" tab.",
+        "offline": "Check your internet connection.",
+        "later": "OpenRouter is not answering right now. Press \"Refresh\" again in a moment."
+      }
+    },
+    "local": {
+      "line": "Requests sent from this app: today {{today}} · last 7 days {{week}}",
+      "lastError": "Last error: {{kind}} {{when}}",
+      "none": "No requests sent from this app yet.",
+      "note": "Request counts are counted by this app. Use of the same key elsewhere is not included."
+    },
+    "kind": {
+      "rateLimit": "Rate limited",
+      "credits": "Out of credits",
+      "auth": "Key problem",
+      "network": "No connection",
+      "server": "Service error",
+      "other": "Error"
+    },
+    "hint": {
+      "rateLimit": "The last request was blocked by a rate limit (429). Wait a bit and try again, or use another AI.",
+      "credits": "Blocked for lack of credits (402). Top up credits on that service to keep using it."
+    },
+    "cli": {
+      "title": "Subscription (login) AIs",
+      "line": "The app cannot read how much of a subscription AI's allowance is left. Check each service's own page.",
+      "docs": "Open {{label}} docs"
+    },
+    "empty": {
+      "title": "No AI is connected with an API key yet",
+      "hint": "Save an API key on the \"Connect\" tab to see its usage here.",
+      "go": "Go to the Connect tab"
+    }
   }
 }
