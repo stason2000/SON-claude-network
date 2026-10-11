@@ -6,6 +6,9 @@ on:
     branches: [claude/new-session-03qopp]
     paths-ignore: ['**.md']
 
+permissions:
+  contents: write   # create the GitHub release the installed apps update from
+
 jobs:
   build:
     runs-on: windows-2022
@@ -17,6 +20,12 @@ jobs:
         with:
           node-version: 22
           cache: npm
+
+      # Every CI build is a new version so installed apps see it as an update.
+      # (package.json in the repo is untouched; this only changes the CI checkout.)
+      - name: Set build version
+        shell: pwsh
+        run: npm version "0.5.${{ github.run_number }}" --no-git-tag-version --allow-same-version
 
       - name: Install dependencies (rebuilds node-pty / better-sqlite3 for Electron)
         run: npm ci
@@ -62,6 +71,18 @@ jobs:
           if ($p.HasExited) { throw "Installed app exited early with code $($p.ExitCode)" }
           Write-Host "Installed app alive after 25s"
           Stop-Process -Id $p.Id -Force
+
+      # Publish only after both smoke tests passed. electron-updater in installed
+      # apps reads latest.yml + the installer + blockmap from this release.
+      - name: Publish release (auto-update feed)
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $v = (Get-Content package.json | ConvertFrom-Json).version
+          $files = @(Get-ChildItem dist -File | Where-Object { $_.Name -like '*-setup.exe' -or $_.Name -like '*-setup.exe.blockmap' -or $_.Name -eq 'latest.yml' } | ForEach-Object { $_.FullName })
+          if ($files.Count -lt 3) { Get-ChildItem dist -File | Select-Object Name, Length; throw "expected setup.exe, .blockmap and latest.yml in dist" }
+          gh release create "v$v" @files --title "SON AI Office $v" --notes "Automatic build $v. Installed apps update from this release." --target "${{ github.sha }}"
 
       - uses: actions/upload-artifact@v4
         with:

@@ -461,8 +461,9 @@ const DEFAULTS: HarnessConfig = {
   missions: [OPS_STANDUP_MISSION],
   notifications: false,
   strongKeepalive: false,
-  // This fork never updates itself from upstream releases and sends no usage stats by default.
-  autoUpdate: false,
+  // Updates come only from this fork's own GitHub releases (see electron-builder.yml `publish`);
+  // no usage stats are sent by default.
+  autoUpdate: true,
   telemetryEnabled: false,
   multiWindow: true,
   tvShowOffices: false,

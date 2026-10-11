@@ -1,9 +1,14 @@
 # Windows x64 installer only (this fork targets the owner's Windows PC + laptop).
 # Based on munder-difflin's electron-builder.yml (MIT, see LICENSE).
 #
-# NOTE: the upstream `publish:` block (auto-update from the original author's
-# GitHub releases) is intentionally removed — a build of this fork must never
-# update itself from someone else's releases.
+# Auto-update reads releases from THIS fork's own GitHub repo (never the original
+# author's). The CI workflow creates the release; electron-builder only stamps
+# app-update.yml into the app and writes latest.yml (--publish never).
+publish:
+  provider: github
+  owner: stason2000
+  repo: SON-claude-network
+  releaseType: release
 appId: com.son.aioffice
 productName: SON AI Office
 copyright: Copyright © 2026 SON. Based on munder-difflin, Copyright © 2026 Chaitanya Giri (MIT).
