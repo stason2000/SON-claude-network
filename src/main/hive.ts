@@ -633,6 +633,12 @@ export class HiveManager {
    *  embedded quotes. POSIX JSON hook configs must use nodeRun() because the
    *  user-selected hive path may legitimately contain spaces. */
   private nodeRunUnquoted(script: string, ...args: string[]): string {
+    if (process.platform === 'win32' && this.nodeLauncher()) {
+      // Unquoted splits at the first space ('C:\AI' is not recognized) when the
+      // hive folder has one; a single quoted wrapper path survives cmd.exe.
+      const wrapper = this.windowsHookWrapper(script);
+      if (wrapper) return [`"${wrapper}"`, ...args].join(' ');
+    }
     return [this.nodeLauncher() ?? 'node', script, ...args].join(' ');
   }
 

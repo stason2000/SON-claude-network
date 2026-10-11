@@ -475,9 +475,12 @@ function paintBrandLogo(ctx: CanvasRenderingContext2D, brand: BrandLogo, scale: 
   // transparent background (no inner tile / outline).
   const w = PORTRAIT_W * scale, h = PORTRAIT_H * scale;
   ctx.clearRect(0, 0, w, h);
-  const side = Math.min(w, h) * 0.88;
+  // Cards show only the top 46/56 of the portrait (the tile is shorter than the
+  // canvas and anchors the top), so centre the logo in THAT visible area.
+  const visibleH = h * (46 / 56);
+  const side = Math.min(w, visibleH) * 0.86;
   ctx.save();
-  ctx.translate((w - side) / 2, (h - side) / 2);
+  ctx.translate((w - side) / 2, (visibleH - side) / 2);
   ctx.scale(side / 24, side / 24);
   ctx.fillStyle = brand.hex;
   ctx.fill(new Path2D(brand.path));
