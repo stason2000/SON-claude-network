@@ -280,7 +280,8 @@
       "warn6": "This app does not install, download or run FreeLLMAPI. You install it and keep it running."
     },
     "addAgentMethods": "Connection type",
-    "addAgentUnavailable": "{{label}}: not connectable — {{reason}}"
+    "addAgentUnavailable": "{{label}}: not connectable — {{reason}}",
+    "aiConnectNote": "For an easier view, use the \"Connect AIs\" button in the top bar. It lists only the AIs that still need connecting."
   },
   "homeSetup": {
     "conflictWorkspace": "This folder already contains a workspace. Nothing will be overwritten or deleted.",
@@ -573,5 +574,40 @@
       "writeFailed": "Could not write a file on this device (permission or location).",
       "unknown": "An unknown error occurred."
     }
+  },
+  "aiConnect": {
+    "title": "Connect AIs",
+    "button": "Connect AIs",
+    "buttonTip": "Show the AIs that are not connected yet",
+    "badgeTip": "{{count}} AIs need connecting",
+    "intro": "Only the AIs you have not connected yet are shown. Each one disappears from the list as soon as it is connected. Connect only the ones you need.",
+    "checking": "Checking connections…",
+    "allDone": "All AIs are connected",
+    "allDoneHint": "You can now add an AI employee and give it work.",
+    "goodAt": "Good at: {{list}}",
+    "cliStep": "1. Press \"Log in\" to open a new window. Sign in as it asks, then close that window.",
+    "autoHint": "The app notices automatically once you have signed in. If nothing changes, press \"Check again\".",
+    "manualHint": "2. When you have signed in, press \"I connected it\". (The app cannot see this AI's login by itself.)",
+    "manualHintAutoFailed": "2. The automatic check did not work. When you have signed in, press \"I connected it\".",
+    "markDone": "I connected it",
+    "recheck": "Check again",
+    "recheckAll": "Check all again",
+    "apiStep": "1. Open the key page with the button below and create a key, then 2. paste it into the field and press \"Save\".",
+    "keyLabel": "{{label}} API key",
+    "keySafe": "The key is stored encrypted on this computer and never shown again.",
+    "testAfterSave": "After saving, you can run \"Connection test\" under \"Show connected AIs\" below.",
+    "justConnected": "{{label}} connected! Removed it from the list.",
+    "showConnected": "Show connected AIs ({{count}})",
+    "hideConnected": "Hide connected AIs",
+    "via": {
+      "key": "API key saved",
+      "auto": "Signed in (checked automatically)",
+      "manual": "Marked \"I connected it\""
+    },
+    "disconnect": "Disconnect",
+    "disconnectHint": "Disconnecting puts it back in the list above, where you can connect it again.",
+    "autoLogoutHint": "The AI's own program reports its login. To log out, do it in that program.",
+    "confirmClearKey": "Delete the saved API key for {{label}}? AI employees using this AI will stop working.",
+    "close": "Close"
   }
 }

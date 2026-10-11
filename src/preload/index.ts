@@ -339,6 +339,8 @@ export interface HarnessConfig {
    *  FreeLLMAPI → http://localhost:3001/v1). Non-secret; keys stay in the encrypted
    *  connector key store. Validated by validateConnectorEndpoint on write and use. */
   connectorEndpoints?: Record<string, string>;
+  /** CLI connectors marked "연결했어요" (non-secret, per machine; mirrors src/main/config.ts). */
+  cliConnected?: Record<string, boolean>;
   /** Per-CLI-provider default model slug, used to pre-fill the model picker. */
   providerDefaultModels?: Partial<Record<AgentProvider, string>>;
 }
@@ -1356,6 +1358,13 @@ const api = {
     | { ok: true; mode: 'command' | 'first-run'; command: string; inside?: string }
     | { ok: false; error: 'unknown-connector' | 'no-login' | 'not-installed' | 'no-terminal' | 'spawn-failed'; docsUrl?: string }
   > => ipcRenderer.invoke('connector:login', id),
+  /** AI 연결 window: is this CLI installed / signed in? Exit code of a documented
+   *  read-only status command only (never its output). */
+  connectorCliCheck: (id: string): Promise<{ state: 'connected' | 'not-connected' | 'unknown' | 'not-installed'; auto: boolean }> =>
+    ipcRenderer.invoke('connectorCli:check', id),
+  /** The manual "연결했어요" flag for a CLI connector (non-secret config). */
+  connectorCliSetConnected: (req: { id: string; connected: boolean }): Promise<{ ok: true; cliConnected: Record<string, boolean> } | { ok: false; error: string }> =>
+    ipcRenderer.invoke('connectorCli:setConnected', req),
   /** Self-hosted API connector endpoint (non-secret). */
   connectorEndpointGet: (id: string): Promise<{ ok: true; endpoint: string; defaultEndpoint: string } | { ok: false; error: string }> =>
     ipcRenderer.invoke('connectorEndpoint:get', id),

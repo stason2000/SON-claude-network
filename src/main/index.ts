@@ -66,8 +66,9 @@ import { electronApiKeyStore, registerApiKeyIpc } from './apiKeys';
 import { defaultRulesPath, registerMichaelRulesIpc } from './michaelRules';
 import { initSync } from './sync';
 import { prepareApiAgentSpawn } from './apiAgent';
-import { getApiConnector, sanitizeConnectorEndpoints, validateConnectorEndpoint } from '../shared/connectors';
+import { getApiConnector, isCliConnectorId, sanitizeCliConnected, sanitizeConnectorEndpoints, validateConnectorEndpoint } from '../shared/connectors';
 import { launchCliLogin } from './cliLogin';
+import { checkCliConnection } from './cliStatus';
 import { testApiConnector } from './connectorTest';
 import { buildPtyEnv } from './ptyEnv';
 import { userShellPath } from './shellEnv';
@@ -3233,6 +3234,49 @@ ipcMain.handle('connector:login', (_evt, id: unknown) =>
       } catch { resolve(false); }
     })
   }));
+// ─── IPC: "is this CLI signed in?" for the AI 연결 window (see cliStatus.ts) ───
+// Binary lookup for every CLI; a documented READ-ONLY status command (claude
+// `auth status`, codex `login status`) only where the registry has one. stdio is
+// ignored — the app reads the exit code only, never the CLI's output.
+const resolveInstalledCli = (bin: string): string | null => {
+  try {
+    const r = resolveCliCommand(bin);
+    return r !== bin && existsSync(r) ? r : null;
+  } catch { return null; }
+};
+ipcMain.handle('connectorCli:check', (_evt, id: unknown) =>
+  checkCliConnection(id, {
+    platform: process.platform,
+    resolve: resolveInstalledCli,
+    run: (launch, timeoutMs) => new Promise((resolve) => {
+      let done = false;
+      const finish = (r: { code: number | null; timedOut?: boolean }): void => { if (!done) { done = true; resolve(r); } };
+      try {
+        const child = spawn(launch.command, launch.args, {
+          stdio: 'ignore',
+          windowsHide: true,
+          windowsVerbatimArguments: launch.windowsVerbatimArguments === true,
+          env: buildPtyEnv(process.env, userShellPath())
+        });
+        const timer = setTimeout(() => {
+          try { child.kill(); } catch { /* already gone */ }
+          finish({ code: null, timedOut: true });
+        }, timeoutMs);
+        child.once('error', () => { clearTimeout(timer); finish({ code: null }); });
+        child.once('exit', (code) => { clearTimeout(timer); finish({ code: typeof code === 'number' ? code : null }); });
+      } catch { finish({ code: null }); }
+    })
+  }));
+// The manual "연결했어요" flag for CLIs without a status command (non-secret config).
+ipcMain.handle('connectorCli:setConnected', (_evt, payload: unknown) => {
+  const p = (payload ?? {}) as { id?: unknown; connected?: unknown };
+  if (!isCliConnectorId(p.id)) return { ok: false, error: 'unknown CLI connector' };
+  const current: Record<string, boolean> = { ...(readConfig().cliConnected ?? {}) };
+  if (p.connected === true) current[p.id as string] = true;
+  else delete current[p.id as string];
+  const next = writeConfig({ cliConnected: sanitizeCliConnected(current, isCliConnectorId) });
+  return { ok: true, cliConnected: next.cliConnected ?? {} };
+});
 // ─── IPC: self-hosted API connector endpoint (non-secret; e.g. FreeLLMAPI) ────
 ipcMain.handle('connectorEndpoint:get', (_evt, id: unknown) => {
   const c = getApiConnector(id);

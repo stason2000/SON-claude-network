@@ -99,6 +99,24 @@ export interface CliLoginSpec {
   sourceUrl: string;
   /** Date (YYYY-MM-DD) the source was read. */
   checked: string;
+  /** A READ-ONLY "am I signed in?" command, only when the CLI's official docs
+   *  name one AND document its exit code. Main runs it with a short timeout,
+   *  stdio ignored (output is never read), nothing opened. Exit 0 = signed in;
+   *  an exit code in `loggedOutCodes` = signed out (only codes the docs state);
+   *  anything else (old CLI, timeout, error) = unknown → the manual "연결했어요"
+   *  button. Absent = no documented status command → manual button only. */
+  status?: CliStatusSpec;
+}
+
+export interface CliStatusSpec {
+  /** Arguments after the binary, e.g. ['auth', 'status']. Trusted constants. */
+  args: string[];
+  /** Exit codes the docs say mean "not signed in" (may be empty). */
+  loggedOutCodes: number[];
+  /** Official page the command and its exit codes were read from. */
+  sourceUrl: string;
+  /** Date (YYYY-MM-DD) the source was read. */
+  checked: string;
 }
 
 export interface CliConnector extends ConnectorBase {

@@ -41,6 +41,7 @@ import capcut from './capcut';
 export * from './types';
 export { cliConnector } from './cliConnector';
 export * from './endpoint';
+export * from './connectionList';
 
 export const CONNECTORS: readonly Connector[] = [
   // CLI terminal agents (wrap the agentProvider presets)
@@ -116,6 +117,11 @@ export function sanitizeConnectorEndpoints(input: unknown): Record<string, strin
     if (v.ok) out[id] = v.url;
   }
   return out;
+}
+
+/** true when `id` names a registered 'cli' connector. */
+export function isCliConnectorId(id: unknown): boolean {
+  return typeof id === 'string' && getConnector(id)?.kind === 'cli';
 }
 
 /** How a person connects this AI: log in inside its own CLI, paste an API key, or not at all. */

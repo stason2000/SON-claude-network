@@ -137,6 +137,8 @@ export interface HarnessConfig {
    *  FreeLLMAPI → http://localhost:3001/v1). Non-secret; keys stay in the encrypted
    *  connector key store. Validated by validateConnectorEndpoint on write and use. */
   connectorEndpoints?: Record<string, string>;
+  /** CLI connectors marked "연결했어요" (non-secret, per machine; mirrors src/main/config.ts). */
+  cliConnected?: Record<string, boolean>;
   /** Per-CLI-provider default model slug, used to pre-fill the model picker. */
   providerDefaultModels?: Partial<Record<AgentProvider, string>>;
   /** Legacy single-webhook fields (mirrors src/main/config.ts, where they are

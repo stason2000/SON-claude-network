@@ -23,6 +23,8 @@ import { UpdateToast } from '@/components/UpdateToast';
 import { UpdateBadge } from '@/components/UpdateBadge';
 import { useAppTheme, toggleAppTheme } from '@/design/theme';
 import { SettingsModal, type Section as SettingsSection } from '@/components/SettingsModal';
+import { AiConnectModal } from '@/components/AiConnectModal';
+import { refreshAiConnections, useAiConnections } from '@/components/aiConnections';
 import { PixelPanel } from '@/components/PixelPanel';
 import { PixelButton } from '@/components/PixelButton';
 import { Icon } from '@/components/Icon';
@@ -80,6 +82,16 @@ export function App() {
     return false;
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
+  /** The standalone "AI 연결" window (only the AIs still to connect). */
+  const [aiConnectOpen, setAiConnectOpen] = useState(false);
+  const aiConn = useAiConnections();
+  const aiPending = aiConn.loaded ? aiConn.pending.length : 0;
+  // Badge count: key presence + saved flags + the read-only CLI status checks.
+  // Deferred a moment so it never competes with the office booting.
+  useEffect(() => {
+    const id = window.setTimeout(() => { void refreshAiConnections({ cli: true }); }, 2500);
+    return () => window.clearTimeout(id);
+  }, []);
   /** Which tab Settings opens on. Set by a `cth:open-settings` deep link, reset
    *  to undefined (→ General) whenever the modal is opened the normal way. */
   const [settingsSection, setSettingsSection] = useState<SettingsSection | undefined>(undefined);
@@ -379,6 +391,35 @@ export function App() {
         {/* v0.3.4: the IDE button moved to agent level — every agent's header
             (sidebar detail, god Command Center, fullscreen) carries it. */}
         <button
+          className="cth-titlebar-nodrag cth-tip"
+          onClick={() => setAiConnectOpen(true)}
+          data-tip={aiPending > 0 ? t('extra.aiConnect.badgeTip', { count: aiPending }) : t('extra.aiConnect.buttonTip')}
+          aria-label={aiPending > 0 ? `${t('extra.aiConnect.button')} (${t('extra.aiConnect.badgeTip', { count: aiPending })})` : t('extra.aiConnect.button')}
+          style={{
+            position: 'relative',
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            height: 28, padding: '0 10px',
+            background: 'var(--cth-paper-100)',
+            boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+            border: 'none', borderRadius: 2, cursor: 'pointer',
+            fontFamily: 'var(--cth-font-ui)', fontSize: 12, fontWeight: 600,
+            color: 'var(--cth-ink-900)', whiteSpace: 'nowrap'
+          }}
+        >
+          {t('extra.aiConnect.button')}
+          {aiPending > 0 && (
+            <span
+              aria-hidden="true"
+              style={{
+                minWidth: 18, height: 18, padding: '0 5px', borderRadius: 9,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                background: 'var(--cth-coral, #E5534B)', color: '#fff',
+                fontSize: 11, fontWeight: 700, lineHeight: 1
+              }}
+            >{aiPending}</span>
+          )}
+        </button>
+        <button
           className="cth-titlebar-nodrag cth-settings-btn cth-tip"
           onClick={() => { setSettingsSection(undefined); setSettingsOpen(true); }}
           data-tip={t('extra.app.settings')}
@@ -525,9 +566,11 @@ export function App() {
         <SettingsModal
           config={config}
           initialSection={settingsSection}
-          onClose={() => { setSettingsOpen(false); setSettingsSection(undefined); }}
+          onClose={() => { setSettingsOpen(false); setSettingsSection(undefined); void refreshAiConnections(); }}
         />
       )}
+
+      {aiConnectOpen && <AiConnectModal onClose={() => setAiConnectOpen(false)} />}
 
       {quitWarn && (
         <QuitWarningModal

@@ -79,6 +79,7 @@ export function ConnectorsSettings() {
       <div>
         <div style={headStyle}>{t('extra.connectors.title')}</div>
         <div style={{ fontSize: 12, color: 'var(--cth-ink-700)', lineHeight: '18px' }}>{t('extra.connectors.desc')}</div>
+        <div style={{ fontSize: 12, color: 'var(--cth-ink-900)', lineHeight: '18px', marginTop: 2 }}>{t('extra.connectors.aiConnectNote')}</div>
       </div>
       {connectors.map((c) => (
         <div
@@ -145,7 +146,7 @@ export function ConnectorsSettings() {
 const FREELLMAPI_RELEASES = 'https://github.com/tashfeenahmed/freellmapi/releases';
 
 /** Korean setup steps + an honest warning card. The app never installs or runs FreeLLMAPI. */
-function FreeLlmApiGuide() {
+export function FreeLlmApiGuide() {
   const { t } = useTranslation();
   const box: CSSProperties = { padding: '6px 8px', fontSize: 12, lineHeight: '17px', color: 'var(--cth-ink-900)' };
   return (
@@ -172,7 +173,7 @@ function FreeLlmApiGuide() {
 }
 
 /** Non-secret server address for a self-hosted connector (validated in main). */
-function EndpointEditor({ connector }: { connector: ApiConnector }) {
+export function EndpointEditor({ connector }: { connector: ApiConnector }) {
   const { t } = useTranslation();
   const [value, setValue] = useState('');
   const [note, setNote] = useState('');
@@ -215,7 +216,7 @@ function EndpointEditor({ connector }: { connector: ApiConnector }) {
 }
 
 /** GET {endpoint}/models with the stored key (main-side); shows ok/fail only. */
-function ConnectionTestButton({ connector }: { connector: ApiConnector }) {
+export function ConnectionTestButton({ connector }: { connector: ApiConnector }) {
   const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);

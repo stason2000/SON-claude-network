@@ -13,7 +13,7 @@ import { defaultMcpDefaults } from '../shared/mcpCatalog';
 import { MAX_AGENT_TOKEN_CAP } from '../shared/tokenCaps';
 import { sanitizeDepartmentsConfig, type DepartmentsConfig } from '../shared/departments';
 import { expandTilde, normalizeHiveHome } from './fs';
-import { sanitizeConnectorEndpoints } from '../shared/connectors';
+import { isCliConnectorId, sanitizeCliConnected, sanitizeConnectorEndpoints } from '../shared/connectors';
 import type { IntegrationRecord } from '../shared/integrations';
 import {
   DEFAULT_CONTEXT_TRIGGER,
@@ -329,6 +329,11 @@ export interface HarnessConfig {
    *  FreeLLMAPI → http://localhost:3001/v1). Non-secret; keys stay in the encrypted
    *  connector key store. Validated by validateConnectorEndpoint on write and use. */
   connectorEndpoints?: Record<string, string>;
+  /** CLI connectors the person marked "연결했어요" in the AI 연결 window (no
+   *  documented status command to check automatically). Non-secret, per machine
+   *  (not in the sync allow-list): only `{connectorId: true}` for registered CLI
+   *  connectors is kept. No credential or login detail is ever stored here. */
+  cliConnected?: Record<string, boolean>;
   /** Per-CLI-provider default model slug, used to pre-fill the model picker. */
   providerDefaultModels?: Partial<Record<AgentProvider, string>>;
   /** Master toggle for the Slack → Michael's-queue integration. */
@@ -698,6 +703,7 @@ export function writeConfig(patch: Partial<HarnessConfig>): HarnessConfig {
   // Self-hosted connector endpoints receive an API key, so only validated
   // http://localhost or https URLs for editable connectors are persisted.
   if (patch && 'connectorEndpoints' in patch) next.connectorEndpoints = sanitizeConnectorEndpoints(patch.connectorEndpoints);
+  if (patch && 'cliConnected' in patch) next.cliConnected = sanitizeCliConnected(patch.cliConnected, isCliConnectorId);
   // Project INGESTION — a registered repo is typed by hand ("~/dev/foo") as often
   // as it is picked from the folder dialog. Expand `~` here so the persisted list
   // (and therefore every agent's default cwd) is ABSOLUTE; Node's fs/spawn treat

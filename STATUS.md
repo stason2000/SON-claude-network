@@ -104,3 +104,14 @@
 - **FreeLLMAPI(새 API 연결부):** 사용자가 직접 설치·실행하는 로컬 라우터(MIT). 기본 주소 `http://localhost:3001/v1`(설정에서 변경 가능, localhost/127.0.0.1 http 또는 https만 허용, 주소는 설정 파일 `connectorEndpoints`, 키는 기존 암호화 키 저장소). 새 프로토콜 `openai-chat`(`/chat/completions` 스트리밍; `/v1/responses`는 스트림 이벤트가 문서에 없어 사용 안 함). 설정 카드에 설치 순서·주의 사항(무료 등급만, 최고급 모델 없음, 속도 들쭉날쭉, "개인 실험용", 각 업체 약관 적용, 프리미엄 연 $19 선택) + **연결 테스트**(`GET /models`, 키는 기록·표시 안 함). 앱은 FreeLLMAPI를 묶거나 내려받거나 실행하지 않음.
 - **FreeLLMAPI 캐릭터:** `ai-freellmapi`(연두색 "쌓인 층" 모양, 사람 아님). 캐릭터를 고르면 엔진이 Custom + `son-api freellmapi`로 바뀌고, 반대로 그 명령이면 그림도 따라감. 직원 편집에서 API 직원의 명령이 Claude로 바뀌던 문제도 같이 고침.
 - **시험:** `test/connectors-login-freellmapi.test.cjs` 추가(가짜 서버·가짜 터미널). 전체 1,030개 중 `proc-kill` 1개만 실패(샌드박스 제한). **실제 로그인 창(윈도우)·실제 FreeLLMAPI·화면 모습은 확인하지 못함** — 사용자 PC에서 확인 필요.
+
+## "AI 연결" 창 — 코드 완료 (리눅스 가상화면에서 확인함)
+- 위쪽 막대 설정(렌치) 옆 **AI 연결** 버튼 + 빨간 숫자(아직 연결 안 된 AI 수, 0이면 숨김). 누르면 설정과 별개인 창이 열리고 **아직 연결 안 된 AI만** 보여 줌. 연결되면 바로 목록에서 빠지고 "○○ 연결 완료!" 표시.
+- 연결 판단(`src/shared/connectors/connectionList.ts`, 시험 `test/ai-connect-window.test.cjs`):
+  - API 방식: 암호화된 키가 저장돼 있으면 연결됨(기존 `has`만 사용, 키는 화면으로 안 나감).
+  - 로그인 방식(CLI): 공식 문서에 "읽기 전용 상태 확인 명령 + 종료 코드"가 있는 것만 자동 확인 — Claude `claude auth status`(0=로그인, 1=아님, code.claude.com/docs/en/cli-reference), Codex `codex login status`(0=로그인, developers.openai.com/codex/cli/reference; 로그아웃 코드는 문서에 없어 0만 믿음). 출력은 읽지 않고 종료 코드만 봄(6초 제한, 창 안 띄움, `src/main/cliStatus.ts`).
+  - 나머지 CLI(Gemini, Grok, Cursor 등)는 로그인 후 사용자가 **연결했어요**를 누름 → 설정 파일 `cliConnected`(비밀 아님, 이 컴퓨터에만, 동기화 안 함). 자동 확인이 실패한 경우에도 이 버튼이 나옴.
+  - 프로그램이 설치 안 됐으면 버튼 대신 "설치되어 있지 않습니다 + 공식 설치 안내" (자동 설치 없음).
+- 맨 아래 **연결된 AI 보기**: 연결된 것 목록, "연결 해제"(CLI는 표시만 지움, API는 확인 후 키 삭제). 자동 확인된 CLI는 "다시 확인"만(로그아웃은 그 프로그램에서). FreeLLMAPI의 연결 테스트도 여기 있음.
+- 다 연결되면 "모든 AI가 연결되어 있어요". 설정 → AI 직원 및 모델 → 연결부에는 이 창을 안내하는 한 줄 추가(기존 화면 그대로).
+- 확인한 것(가상화면): 버튼·숫자, 목록, 미설치 안내, "연결했어요" → 목록에서 빠짐·숫자 감소·새로고침 후에도 유지, 연결 해제 → 다시 목록으로, Claude 자동 확인(이 환경에 로그인돼 있어 자동으로 연결됨 표시). 확인 못 한 것: 실제 API 키 저장(가상환경에 OS 암호화 없음), 모두 연결된 화면, 윈도우에서 `claude.cmd`/`codex.cmd` 상태 확인.
