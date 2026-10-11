@@ -598,7 +598,35 @@ export class HiveManager {
    *  DOUBLE-QUOTED (safe for paths with spaces). */
   private nodeRun(script: string, ...args: string[]): string {
     const launcher = this.nodeLauncher();
+    if (process.platform === 'win32' && launcher) {
+      // cmd.exe /c strips the first and last quote of a command holding MORE than
+      // two quotes, so `"a b\launcher" "a b\shim"` is cut at the first space
+      // ('C:\AI' is not recognized) when the folder name has a space. Keep the
+      // command to ONE quoted path (cmd leaves exactly two quotes alone) by baking
+      // the script into a tiny per-script wrapper.
+      const wrapper = this.windowsHookWrapper(script);
+      if (wrapper) return [`"${wrapper}"`, ...args].join(' ');
+    }
     return [launcher ? `"${launcher}"` : 'node', `"${script}"`, ...args].join(' ');
+  }
+
+  /** Windows only: `<bin>/run-<script>.cmd` that runs `script` under the bundled node. */
+  private windowsHookWrapper(script: string): string | null {
+    const root = this.root();
+    if (!root) return null;
+    try {
+      const dir = join(root, 'bin');
+      mkdirSync(dir, { recursive: true });
+      const p = join(dir, `run-${basename(script)}.cmd`);
+      writeFileSync(
+        p,
+        `@echo off\r\nset ELECTRON_RUN_AS_NODE=1\r\n"${process.execPath}" "${script}" %*\r\n`,
+        'utf8'
+      );
+      return p;
+    } catch {
+      return null;
+    }
   }
 
   /** Same, but UNQUOTED — only for configs or platforms that cannot preserve
