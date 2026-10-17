@@ -26,6 +26,7 @@ python router\route.py --dry-run "서울 인구가 몇 명이야?"
 python router\route.py "이메일 초안 써줘"
 ```
 CLI 는 `shutil.which` 로 전체 경로를 찾아 호출하고, 입출력은 UTF-8 로 고정한다. 못 찾으면 어느 CLI 가 문제인지 에러에 표시된다.
+`claude`가 "스크립트를 실행할 수 없습니다(실행 정책)"로 막히면 `claude.cmd -p "hi"` 로 확인하세요(route.py 는 `.cmd`를 찾아 호출).
 한글이 깨져 보이면 `chcp 65001` 후 다시 실행. (Windows 에서의 실제 동작은 아직 미검증.)
 
 ## 선택 방식

@@ -95,10 +95,10 @@ def resolve_cli(name):
     return path
 
 
-def run_cli(cmd, prompt, timeout):
+def run_cli(cmd, prompt, timeout, cwd=None):
     """UTF-8로 고정해 호출한다(Windows 기본 cp949 방지). 프롬프트는 stdin으로 넘겨 .cmd 인자 인용 문제를 피한다."""
     return subprocess.run(cmd, input=prompt, capture_output=True, text=True,
-                          encoding="utf-8", errors="replace", timeout=timeout)
+                          encoding="utf-8", errors="replace", timeout=timeout, cwd=cwd)
 
 
 def run_claude(prompt, t, timeout):
@@ -125,7 +125,8 @@ def run_codex(prompt, t, timeout):
         cmd += ["-m", t["model"]]
     cmd.append("-")
     try:
-        p = run_cli(cmd, prompt, timeout)
+        # 임시 폴더에서 실행해 codex 가 현재 폴더의 파일을 읽지 못하게 한다
+        p = run_cli(cmd, prompt, timeout, cwd=tmpdir)
         if p.returncode != 0:
             raise RuntimeError(p.stderr.strip()[-500:] or "codex 실패(로그인 상태를 확인하세요)")
         return Path(out).read_text(encoding="utf-8", errors="replace").strip(), {}
@@ -165,7 +166,13 @@ def run_with_fallback(prompt, plan, cfg):
     tier = plan["tier"]
     for _ in range(2):
         t = {**plan, **cfg["tiers"][tier]} if tier != plan["tier"] else plan
-        for cand in (t, {**cfg["tiers"][tier]}):
+        cands, seen = [], set()
+        for c in (t, {**cfg["tiers"][tier]}):
+            key = (c["backend"], c.get("model"), c["effort"])
+            if key not in seen:  # 같은 설정을 두 번 호출해 한도를 낭비하지 않는다
+                seen.add(key)
+                cands.append(c)
+        for cand in cands:
             if cand["backend"] not in ("claude", "freellmapi"):
                 try:
                     resolve_cli(cand["backend"])

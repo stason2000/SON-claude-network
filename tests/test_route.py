@@ -99,7 +99,25 @@ class WindowsCompatTest(unittest.TestCase):
         self.assertEqual(seen["cmd"][0], "/x/codex.exe")
         self.assertEqual(seen["cmd"][-1], "-")
         self.assertEqual(seen["kw"]["encoding"], "utf-8")
+        self.assertEqual(seen["kw"]["cwd"], os.path.dirname(seen["out"]))
         self.assertFalse(os.path.exists(os.path.dirname(seen["out"])))
+
+    def test_no_duplicate_call_for_same_config(self):
+        calls = []
+        orig = route.execute
+
+        def failing(prompt, t, cfg):
+            calls.append((t["backend"], t.get("model"), t["effort"]))
+            raise RuntimeError("fail")
+
+        route.execute = failing
+        try:
+            plan = route.decide("x", CFG, kind="qa", tier="easy")
+            with self.assertRaises(RuntimeError):
+                route.run_with_fallback("x", plan, CFG)
+        finally:
+            route.execute = orig
+        self.assertEqual(len(calls), len(set(calls)))
 
     def test_fallback_reports_codex_missing_then_uses_claude(self):
         orig = route.execute
