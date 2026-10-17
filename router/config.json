@@ -1,0 +1,22 @@
+{
+  "_doc": "tier -> 실행 대상. kind별로 덮어쓸 수 있음. backend: claude | codex | freellmapi. 모델명은 계정에서 쓰는 이름으로 수정하세요.",
+  "tiers": {
+    "trivial": {"backend": "claude", "model": "haiku",  "effort": "low"},
+    "easy":    {"backend": "claude", "model": "haiku",  "effort": "medium"},
+    "medium":  {"backend": "claude", "model": "sonnet", "effort": "medium"},
+    "hard":    {"backend": "claude", "model": "sonnet", "effort": "high"},
+    "expert":  {"backend": "claude", "model": "opus",   "effort": "high"}
+  },
+  "kind_overrides": {
+    "code": {
+      "hard":   {"backend": "codex", "model": null, "effort": "high"},
+      "expert": {"backend": "codex", "model": null, "effort": "high"}
+    }
+  },
+  "escalation": ["trivial", "easy", "medium", "hard", "expert"],
+  "fallback_backend": {"codex": "claude", "freellmapi": "claude"},
+  "freellmapi": {"base_url_env": "FREELLMAPI_BASE_URL", "api_key_env": "FREELLMAPI_API_KEY", "model": "auto", "enabled": false},
+  "sensitive_patterns": ["주민등록", "여권번호", "계좌번호", "비밀번호", "password", "api[_ -]?key", "secret", "token", "계약서", "개인정보"],
+  "timeout_sec": 600,
+  "log_file": "~/.son-router/usage.jsonl"
+}
