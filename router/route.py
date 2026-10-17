@@ -77,12 +77,36 @@ def decide(text, cfg, kind=None, tier=None):
     return {"kind": kind, "tier": tier, "sensitive": sensitive, **target}
 
 
+INSTALL_HINTS = {
+    "claude": "claude CLI가 설치/PATH 등록되지 않았습니다. 설치 후 터미널에서 `claude` 를 한 번 실행해 로그인하세요.",
+    "codex": "codex CLI가 설치/PATH 등록되지 않았습니다. 설치 후 터미널에서 `codex login` 으로 로그인하세요.",
+}
+
+
+class CliNotFound(RuntimeError):
+    pass
+
+
+def resolve_cli(name):
+    """실행 파일 전체 경로를 찾는다. Windows의 .cmd/.exe 설치도 shutil.which 가 PATHEXT로 처리한다."""
+    path = shutil.which(name)
+    if path is None:
+        raise CliNotFound(f"{name}: " + INSTALL_HINTS.get(name, "실행 파일을 PATH에서 찾지 못했습니다."))
+    return path
+
+
+def run_cli(cmd, prompt, timeout):
+    """UTF-8로 고정해 호출한다(Windows 기본 cp949 방지). 프롬프트는 stdin으로 넘겨 .cmd 인자 인용 문제를 피한다."""
+    return subprocess.run(cmd, input=prompt, capture_output=True, text=True,
+                          encoding="utf-8", errors="replace", timeout=timeout)
+
+
 def run_claude(prompt, t, timeout):
-    cmd = ["claude", "-p", "--model", t["model"], "--effort", t["effort"],
+    cmd = [resolve_cli("claude"), "-p", "--model", t["model"], "--effort", t["effort"],
            "--output-format", "json", "--no-session-persistence"]
-    p = subprocess.run(cmd, input=prompt, capture_output=True, text=True, timeout=timeout)
+    p = run_cli(cmd, prompt, timeout)
     if p.returncode != 0:
-        raise RuntimeError(p.stderr.strip() or "claude 실패")
+        raise RuntimeError(p.stderr.strip() or "claude 실패(로그인 상태를 확인하세요)")
     data = json.loads(p.stdout)
     if data.get("is_error"):
         raise RuntimeError(str(data.get("result")))
@@ -90,20 +114,23 @@ def run_claude(prompt, t, timeout):
 
 
 def run_codex(prompt, t, timeout):
-    with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as f:
-        out = f.name
-    cmd = ["codex", "exec", "--skip-git-repo-check", "-s", "read-only",
+    exe = resolve_cli("codex")
+    # Windows에서는 열린 임시파일을 다른 프로세스가 쓰지 못하므로, 파일을 미리 만들지 않고
+    # 임시 디렉터리 안의 경로만 넘겨 codex 가 직접 생성하게 한다.
+    tmpdir = tempfile.mkdtemp(prefix="son-router-")
+    out = os.path.join(tmpdir, "last_message.txt")
+    cmd = [exe, "exec", "--skip-git-repo-check", "-s", "read-only",
            "-c", f'model_reasoning_effort="{t["effort"]}"', "-o", out]
     if t.get("model"):
         cmd += ["-m", t["model"]]
     cmd.append("-")
     try:
-        p = subprocess.run(cmd, input=prompt, capture_output=True, text=True, timeout=timeout)
+        p = run_cli(cmd, prompt, timeout)
         if p.returncode != 0:
-            raise RuntimeError(p.stderr.strip()[-500:] or "codex 실패")
-        return Path(out).read_text(encoding="utf-8").strip(), {}
+            raise RuntimeError(p.stderr.strip()[-500:] or "codex 실패(로그인 상태를 확인하세요)")
+        return Path(out).read_text(encoding="utf-8", errors="replace").strip(), {}
     finally:
-        Path(out).unlink(missing_ok=True)
+        shutil.rmtree(tmpdir, ignore_errors=True)
 
 
 def run_freellmapi(prompt, t, timeout, cfg):
@@ -139,9 +166,12 @@ def run_with_fallback(prompt, plan, cfg):
     for _ in range(2):
         t = {**plan, **cfg["tiers"][tier]} if tier != plan["tier"] else plan
         for cand in (t, {**cfg["tiers"][tier]}):
-            if cand["backend"] != "claude" and shutil.which(cand["backend"]) is None and cand["backend"] != "freellmapi":
-                attempts.append(f'{cand["backend"]}: 미설치')
-                continue
+            if cand["backend"] not in ("claude", "freellmapi"):
+                try:
+                    resolve_cli(cand["backend"])
+                except CliNotFound as e:
+                    attempts.append(str(e))
+                    continue
             try:
                 text, meta = execute(prompt, cand, cfg)
                 if text.strip():
@@ -163,7 +193,19 @@ def log_usage(cfg, record):
         f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
+def _utf8_stdio():
+    """Windows 콘솔/파이프의 cp949 때문에 UnicodeEncodeError 가 나지 않게 한다."""
+    for stream, kw in ((sys.stdout, {"encoding": "utf-8", "errors": "replace"}),
+                       (sys.stderr, {"encoding": "utf-8", "errors": "replace"}),
+                       (sys.stdin, {"errors": "replace"})):
+        try:
+            stream.reconfigure(**kw)
+        except (AttributeError, ValueError):
+            pass
+
+
 def main(argv=None):
+    _utf8_stdio()
     ap = argparse.ArgumentParser(description="명령에 맞는 모델/추론강도를 골라 실행")
     ap.add_argument("prompt", nargs="?", help="명령(생략 시 stdin)")
     ap.add_argument("--dry-run", action="store_true", help="실행 없이 선택 결과만 출력")

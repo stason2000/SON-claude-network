@@ -17,6 +17,17 @@ echo "긴 명령" | python3 router/route.py
 ```
 결과는 stdout, 선택 내역은 stderr 마지막 줄, 누적 사용 로그는 `~/.son-router/usage.jsonl`.
 
+## Windows (PowerShell)
+```powershell
+python --version                 # 3.9+
+Get-Command claude, codex        # 설치 경로 확인 (claude.cmd / codex.cmd 도 가능). codex 는 선택
+claude -p "hi"                   # 로그인 확인
+python router\route.py --dry-run "서울 인구가 몇 명이야?"
+python router\route.py "이메일 초안 써줘"
+```
+CLI 는 `shutil.which` 로 전체 경로를 찾아 호출하고, 입출력은 UTF-8 로 고정한다. 못 찾으면 어느 CLI 가 문제인지 에러에 표시된다.
+한글이 깨져 보이면 `chcp 65001` 후 다시 실행. (Windows 에서의 실제 동작은 아직 미검증.)
+
 ## 선택 방식
 1. 민감정보 키워드가 있으면 무료 제공자(FreeLLMAPI)로 보내지 않는다.
 2. kind 판정: code / write / analysis / qa (키워드 기반)
