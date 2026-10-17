@@ -1,0 +1,49 @@
+name: windows
+on:
+  push:
+    branches: [claude/funny-babbage-p7mmch]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Dry run (Korean output)
+        run: python router/route.py --dry-run "서울 인구가 몇 명이야?"
+      - name: Fake claude.cmd on PATH (verifies .cmd resolution and UTF-8 round trip)
+        shell: pwsh
+        run: |
+          $dir = Join-Path $env:RUNNER_TEMP "fakebin"
+          New-Item -ItemType Directory -Force $dir | Out-Null
+          Set-Content -Path (Join-Path $dir "claude.cmd") -Encoding ascii -Value @(
+            '@echo off',
+            'python "%~dp0fake_claude.py" %*'
+          )
+          Set-Content -Path (Join-Path $dir "fake_claude.py") -Encoding utf8 -Value @(
+            'import json, sys',
+            'sys.stdin.reconfigure(encoding="utf-8")',
+            'p = sys.stdin.read()',
+            'sys.stdout.reconfigure(encoding="utf-8")',
+            'print(json.dumps({"result": "에코: " + p, "is_error": False}, ensure_ascii=False))'
+          )
+          $env:PATH = "$dir;$env:PATH"
+          $env:HOME = $env:RUNNER_TEMP
+          $env:USERPROFILE = $env:RUNNER_TEMP
+          $out = python router/route.py "안녕하세요 한글 테스트" 2>$null
+          Write-Host $out
+          if (($out -join "`n") -notmatch "에코: 안녕하세요 한글 테스트") { throw "round trip failed" }
+      - name: Missing codex gives clear error (falls back to claude)
+        shell: pwsh
+        run: |
+          $dir = Join-Path $env:RUNNER_TEMP "fakebin"
+          $env:PATH = "$dir;$env:PATH"
+          $env:USERPROFILE = $env:RUNNER_TEMP
+          $err = python router/route.py --kind code --tier hard "버그 고쳐줘" 2>&1 | Out-String
+          Write-Host $err
+          if ($err -notmatch "대체 1회") { throw "expected one fallback attempt" }
